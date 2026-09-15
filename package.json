@@ -12,8 +12,8 @@
     "phase0:bookmarks": "node phase0/04-fetch-bookmarks.mjs",
     "phase0:refresh": "node phase0/05-refresh-token.mjs",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "vercel-build": "drizzle-kit migrate && next build"
+    "db:migrate": "node scripts/migrate.mjs",
+    "vercel-build": "node scripts/migrate.mjs && next build"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
