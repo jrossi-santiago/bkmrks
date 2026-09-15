@@ -1,4 +1,5 @@
-import { pgTable, text, timestamp, integer, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, jsonb, boolean, uniqueIndex, primaryKey } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import type { XMedia } from "../x";
 
 type PublicMetrics = Record<string, number>;
@@ -42,6 +43,35 @@ export const bookmarks = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true }), // Phase 4: soft delete when source tweet is gone
   },
   (table) => [uniqueIndex("bookmarks_user_tweet_unique").on(table.userId, table.tweetId)]
+);
+
+export const tags = pgTable(
+  "tags",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    isPublic: boolean("is_public").notNull().default(false), // Phase 5: does nothing yet
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("tags_user_name_unique").on(table.userId, sql`lower(${table.name})`),
+  ]
+);
+
+export const bookmarkTags = pgTable(
+  "bookmark_tags",
+  {
+    bookmarkId: text("bookmark_id")
+      .notNull()
+      .references(() => bookmarks.id, { onDelete: "cascade" }),
+    tagId: text("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.bookmarkId, table.tagId] })]
 );
 
 export const syncRuns = pgTable("sync_runs", {

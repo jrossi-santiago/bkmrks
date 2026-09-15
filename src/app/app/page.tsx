@@ -1,29 +1,63 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, isNull, inArray, notInArray, desc } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
-import { bookmarks } from "@/lib/db/schema";
+import { bookmarks, bookmarkTags } from "@/lib/db/schema";
+import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
 import { BookmarkCard } from "@/components/BookmarkCard";
+import { TagFilterBar } from "@/components/TagFilterBar";
 
 // Phase 2: reads from the database — bookmarks are synced on login and on
 // manual refresh (see /app/refresh), not fetched from X on every page load.
-export default async function AppPage() {
+// Phase 3: tag chips filter which bookmarks are shown (?tags=id,id or
+// ?untagged=1).
+export default async function AppPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tags?: string; untagged?: string }>;
+}) {
   const cookieStore = await cookies();
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
   const session = raw ? await decryptSession(raw) : null;
   if (!session) redirect("/login");
 
+  const params = await searchParams;
+  const untagged = params.untagged === "1";
+  const selectedTagIds = new Set(untagged ? [] : (params.tags?.split(",").filter(Boolean) ?? []));
+
   const db = getDb();
+  const conditions = [eq(bookmarks.userId, session.userId), isNull(bookmarks.deletedAt)];
+  if (untagged) {
+    conditions.push(
+      notInArray(bookmarks.id, db.select({ id: bookmarkTags.bookmarkId }).from(bookmarkTags))
+    );
+  } else if (selectedTagIds.size > 0) {
+    conditions.push(
+      inArray(
+        bookmarks.id,
+        db
+          .select({ id: bookmarkTags.bookmarkId })
+          .from(bookmarkTags)
+          .where(inArray(bookmarkTags.tagId, [...selectedTagIds]))
+      )
+    );
+  }
+
   const rows = await db
     .select()
     .from(bookmarks)
-    .where(eq(bookmarks.userId, session.userId))
+    .where(and(...conditions))
     .orderBy(desc(bookmarks.sourceOrder));
   // desc() on sourceOrder is intentional even though newer bookmarks get
   // more-negative values (see schema.ts) — it sorts furthest-below-zero
   // (i.e. most recently added) first once compared against older, less
   // negative values.
+
+  const [allTags, tagsByBookmark] = await Promise.all([
+    getUserTagsWithCounts(session.userId),
+    getTagsForBookmarks(rows.map((r) => r.id)),
+  ]);
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -54,16 +88,23 @@ export default async function AppPage() {
 
       <h1 className="mb-4 text-lg font-semibold">Your bookmarks</h1>
 
+      <TagFilterBar allTags={allTags} selectedTagIds={selectedTagIds} untagged={untagged} />
+
       {rows.length === 0 ? (
         <p className="text-neutral-500">
-          No bookmarks synced yet — if you just signed in, the first sync
-          runs in the background and may take a moment. Try Refresh.
+          {untagged || selectedTagIds.size > 0
+            ? "No bookmarks match this filter."
+            : "No bookmarks synced yet — if you just signed in, the first sync runs in the background and may take a moment. Try Refresh."}
         </p>
       ) : (
         <ol className="space-y-4">
           {rows.map((bookmark, index) => (
             <li key={bookmark.id}>
-              <BookmarkCard bookmark={bookmark} position={index + 1} />
+              <BookmarkCard
+                bookmark={bookmark}
+                tags={tagsByBookmark.get(bookmark.id) ?? []}
+                position={index + 1}
+              />
             </li>
           ))}
         </ol>

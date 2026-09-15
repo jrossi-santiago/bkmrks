@@ -1,11 +1,21 @@
 import type { bookmarks } from "@/lib/db/schema";
+import { addTagAction, removeTagAction } from "@/app/app/actions";
 
 type BookmarkRow = typeof bookmarks.$inferSelect;
+type Tag = { id: string; name: string };
 
 // Respects X's Display Requirements: tweet text is rendered exactly as
 // stored (no truncation/rewriting), author attribution (avatar, name,
 // handle) is always shown, and every card links back to the original tweet.
-export function BookmarkCard({ bookmark, position }: { bookmark: BookmarkRow; position: number }) {
+export function BookmarkCard({
+  bookmark,
+  tags,
+  position,
+}: {
+  bookmark: BookmarkRow;
+  tags: Tag[];
+  position: number;
+}) {
   const tweetUrl = `https://x.com/${bookmark.authorHandle}/status/${bookmark.tweetId}`;
   const postedAt = new Date(bookmark.tweetCreatedAt);
 
@@ -43,6 +53,31 @@ export function BookmarkCard({ bookmark, position }: { bookmark: BookmarkRow; po
           })}
         </div>
       )}
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        {tags.map((tag) => (
+          <form key={tag.id} action={removeTagAction} className="inline-flex">
+            <input type="hidden" name="bookmarkId" value={bookmark.id} />
+            <input type="hidden" name="tagId" value={tag.id} />
+            <button
+              type="submit"
+              className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+              title="Remove tag"
+            >
+              {tag.name} &times;
+            </button>
+          </form>
+        ))}
+        <form action={addTagAction} className="inline-flex items-center gap-1">
+          <input type="hidden" name="bookmarkId" value={bookmark.id} />
+          <input
+            type="text"
+            name="name"
+            placeholder="+ tag"
+            className="w-16 rounded-full border border-neutral-200 bg-transparent px-2 py-0.5 text-xs placeholder:text-neutral-400 focus:w-24 focus:outline-none dark:border-neutral-700"
+          />
+        </form>
+      </div>
 
       <div className="mt-3 flex items-center justify-between text-xs text-neutral-500">
         <span title="This is the tweet's original post time, not when it was bookmarked">
