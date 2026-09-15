@@ -61,31 +61,44 @@ Project → Settings → Environment Variables. Status:
       `openssl rand -base64 32`; encrypts the session cookie AND the X
       tokens stored at rest in the database — never commit the actual
       value anywhere)
-- [ ] `DATABASE_URL` — the transaction pooler string (port 6543) from step 3
-- [ ] `DIRECT_URL` — the session pooler string (port 5432) from step 3 —
-      NOT the "Direct connection" tab (IPv6-only, unreachable from Vercel)
+- [x] `DATABASE_URL` — set (transaction pooler, port 6543 — app runtime)
+- [x] `DIRECT_URL` — set (session pooler, port 5432 — migrations only;
+      NOT the "Direct connection" tab, that one's IPv6-only and unreachable
+      from Vercel)
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
 
 ## 5. Migrations run automatically on deploy
 
-No terminal needed — the `vercel-build` script (`drizzle-kit migrate &&
-next build`) runs pending migrations before every build, so as long as
+No terminal needed — `vercel-build` (`node scripts/migrate.mjs && next
+build`) runs pending migrations before every build, so as long as
 `DATABASE_URL` and `DIRECT_URL` are set, pushing to `main` (or clicking
-Redeploy) is enough. Safe to run repeatedly: already-applied migrations are
-skipped.
+Redeploy) is enough. Safe to run repeatedly: already-applied migrations
+(tracked in the `drizzle.__drizzle_migrations` table) are skipped.
 
-Migrations specifically use `DIRECT_URL`, not the pooled `DATABASE_URL` the
+`scripts/migrate.mjs` calls `drizzle-orm`'s `migrate()` directly rather
+than shelling out to the `drizzle-kit migrate` CLI — the CLI's spinner-based
+output swallowed the real error on Vercel (two builds failed with a bare
+`exit 1` and nothing to diagnose). If a future migration ever fails, this
+script will now print the actual Postgres error.
+
+Migrations use `DIRECT_URL` specifically, not the pooled `DATABASE_URL` the
 app uses at runtime — Supabase's transaction pooler (pgBouncer) doesn't
-support the session-level behavior the migration tool needs, a separate
-issue from the `prepare: false` fix for the app's regular queries. If
-`DIRECT_URL` isn't set it falls back to `DATABASE_URL`, which fails with
-"applying migrations..." hanging and exiting 1 on Vercel — the symptom of
-this mismatch. Use Supabase's **Session pooler** string for `DIRECT_URL`,
-not the literal "Direct connection" tab — that one resolves IPv6-only and
-fails near-instantly from Vercel's build environment (same symptom, different
-cause, easy to get both wrong in a row).
+support the session-level behavior the migration tool needs. Use the
+**Session pooler** string for `DIRECT_URL`, not the literal "Direct
+connection" tab — that one resolves IPv6-only and is unreachable from
+Vercel's build environment.
+
+**Incident note**: the first deploy attempt (before `DIRECT_URL` existed)
+partially applied migration 0000 over the transaction pooler — tables got
+created but the tracking row never committed, so a later run collided with
+`relation "bookmarks" already exists`. Fixed by dropping the orphaned
+objects directly in Supabase's SQL Editor (`DROP SCHEMA IF EXISTS drizzle
+CASCADE; DROP TABLE IF EXISTS bookmark_tags, tags, sync_runs, bookmarks,
+users CASCADE;`) and redeploying clean. If this happens again on a
+database that already has real user data, do **not** reuse that DROP
+blindly — reconcile row-by-row instead.
 
 If you ever do have a terminal handy and want to run one manually:
 `DATABASE_URL=... DIRECT_URL=... npm run db:migrate`.
