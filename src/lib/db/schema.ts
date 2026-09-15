@@ -14,6 +14,14 @@ export const users = pgTable("users", {
   refreshToken: text("refresh_token").notNull(), // encrypted at rest
   tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Phase 6: the paid gate. Set only by the Whop webhook handler
+  // (src/app/api/webhooks/whop/route.ts) reacting to membership.activated/
+  // deactivated — never by anything the user's own browser can trigger
+  // directly. Defaults false: no free tier, not even during the gap
+  // between account creation and a completed checkout.
+  whopMembershipId: text("whop_membership_id"),
+  membershipActive: boolean("membership_active").notNull().default(false),
+  membershipUpdatedAt: timestamp("membership_updated_at", { withTimezone: true }),
 });
 
 export const bookmarks = pgTable(

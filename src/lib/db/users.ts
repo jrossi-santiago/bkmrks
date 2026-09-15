@@ -62,3 +62,22 @@ export async function getValidAccessToken(userId: string): Promise<string> {
 
   return refreshed.access_token;
 }
+
+// Phase 6: the only place membership_active is ever written, called
+// exclusively from the verified Whop webhook handler
+// (src/app/api/webhooks/whop/route.ts) — never from anything a browser
+// can reach directly.
+export async function setMembershipActive(
+  userId: string,
+  params: { active: boolean; whopMembershipId: string }
+): Promise<void> {
+  const db = getDb();
+  await db
+    .update(users)
+    .set({
+      membershipActive: params.active,
+      whopMembershipId: params.whopMembershipId,
+      membershipUpdatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+}

@@ -1,10 +1,13 @@
 import { cookies } from "next/headers";
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
 import { exchangeCode, getMe } from "@/lib/x";
 import { encryptSession, SESSION_COOKIE, sessionCookieOptions, type Session } from "@/lib/session";
 import { upsertUserFromLogin } from "@/lib/db/users";
 import { runSync } from "@/lib/sync";
+import { getDb } from "@/lib/db/client";
+import { users } from "@/lib/db/schema";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
@@ -59,6 +62,24 @@ export async function GET(request: NextRequest) {
       avatarUrl: xUser.profile_image_url ?? "",
     };
     cookieStore.set(SESSION_COOKIE, await encryptSession(session), sessionCookieOptions);
+
+    // Phase 6 paid gate: a non-member is authenticated (we know who they
+    // are) but not entitled to a synced dashboard — skip the backfill
+    // entirely rather than spending X API calls on an account that can't
+    // see the results yet. It runs the first time they land on /app with
+    // an active membership instead (see src/app/app/page.tsx — that path
+    // still has no persisted bookmarks yet, same "No bookmarks synced
+    // yet... try Refresh" case Phase 2 already handles).
+    const db = getDb();
+    const [dbUser] = await db
+      .select({ membershipActive: users.membershipActive })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!dbUser?.membershipActive) {
+      return NextResponse.redirect(new URL("/subscribe", request.url));
+    }
 
     // Full backfill on first login, incremental sync (watermark) on every
     // login after that — same function either way. Runs after the redirect

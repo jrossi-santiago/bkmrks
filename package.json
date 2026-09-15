@@ -17,6 +17,7 @@
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
+    "@whop/sdk": "^1.1.4",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
     "next": "16.3.5",
@@ -30,6 +31,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "drizzle-kit": "^0.31.10",
+    "standardwebhooks": "^1.1.1",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.13",
     "typescript": "^5.7.2"

@@ -27,6 +27,41 @@ At developer.x.com:
 4. Keys and tokens tab → copy the **OAuth 2.0 Client ID** and **Client
    Secret**.
 
+## 2b. Set up Whop (Phase 6 paid gate)
+
+No free tier — every account (except the one grandfathered below) needs an
+active Whop membership to reach `/app` at all. All of this happens at
+[whop.com](https://whop.com), on whichever account/company should receive
+the payments:
+
+1. **Create a product and a plan.** Whop dashboard → Products → create one.
+   For the plan, pick **Renewal** (recurring), not **One-time** — "no free
+   tier... must have an active membership" is a subscription concept, not
+   a lifetime unlock. Set whatever price/billing period you want. Copy the
+   plan's ID (`plan_xxxxxxxxxxxxx`) → **`WHOP_PLAN_ID`**.
+2. **Create an Account API key.** Dashboard → Account API Keys → Create.
+   This is the key type for a server acting on its own account's data
+   (checkout links, membership lookups) — not an "App API key", which is
+   for a Whop App installed across *other* companies' accounts, which this
+   isn't. Copy it → **`WHOP_API_KEY`**.
+3. **Create a webhook subscription.** Dashboard → Developer → Webhooks →
+   create one pointed at `https://<your-domain>/api/webhooks/whop`,
+   subscribed to at least `membership.activated` and
+   `membership.deactivated` (those are the only two events the app acts
+   on). Copy the signing secret shown in the **Secret** column, exactly as
+   given (don't strip the `ws_` prefix or re-encode it) → **`WHOP_WEBHOOK_SECRET`**.
+4. Add all three to Vercel (step 4 below) and redeploy.
+
+**Testing before it's live**: Whop has a full sandbox —
+`sandbox.whop.com` for creating a separate sandbox product/plan/API
+key/webhook (same steps as above, on that site instead), and test card
+`4242 4242 4242 4242` (any future expiry, any 3-digit CVC) for a
+successful charge. To point the app at it temporarily, also set
+**`WHOP_API_BASE_URL=https://sandbox-api.whop.com/api/v1`** in Vercel
+alongside sandbox-specific values for the three vars above; remove it (or
+set it back to unset) and swap in production values when you're ready to
+take real payments.
+
 ## 3. Get a Postgres database
 
 Default per the brief: a Supabase project on the same account as replylane.
@@ -73,6 +108,11 @@ Project → Settings → Environment Variables. Status:
       Without it, the route replies 401 to Vercel's own cron hits — check
       Project → Cron Jobs → View Logs if revalidation looks like it isn't
       running.
+- [ ] `WHOP_API_KEY` — from step 2b (Account API Keys → Create)
+- [ ] `WHOP_WEBHOOK_SECRET` — from step 2b (the webhook subscription's
+      Secret column)
+- [ ] `WHOP_PLAN_ID` — from step 2b (the plan you created, `plan_...`)
+- [ ] `WHOP_API_BASE_URL` — optional, sandbox testing only (step 2b)
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
@@ -125,16 +165,33 @@ means `CRON_SECRET` is missing or doesn't match what the route expects.
 
 ## 6. Try it
 
-Visit `https://<your-domain>/` and click **Sign in with X**. After
-approving, you land on `/app`. The first sync (full backfill) runs in the
-background — if the dashboard looks empty right after signing in, wait a
-moment and click **Refresh**. After that, bookmarks are read straight from
-the database; **Refresh** re-syncs (fast — it stops at the first bookmark
+Visit `https://<your-domain>/` and click **Sign in with X**. Migration
+0003 grandfathers the product owner's own account (`x_handle =
+'thejosephrossi'`) with `membership_active = true` automatically, so that
+account lands straight on `/app` as before. Every other account —
+including a second X account you sign in with to test the paid flow —
+lands on `/subscribe` instead, since there's no free tier.
+
+To verify the paid gate end to end: sign in with an account that isn't
+grandfathered, land on `/subscribe`, click **Subscribe with Whop**, and
+complete checkout (use the sandbox test card from step 2b if you pointed
+`WHOP_API_BASE_URL` at sandbox). You're redirected to `/app?checkout=return`,
+which shows "Confirming your membership..." until the `membership.activated`
+webhook lands (usually a few seconds — Whop dashboard → Webhooks → your
+endpoint's delivery log shows whether it fired and whether this app
+returned 200). Reload and you should be in. Check the `users` row in
+Supabase for that account: `membership_active` should now be `true` and
+`whop_membership_id` populated.
+
+Once in `/app`: the first sync (full backfill) runs in the background —
+if the dashboard looks empty right after signing in, wait a moment and
+click **Refresh**. After that, bookmarks are read straight from the
+database; **Refresh** re-syncs (fast — it stops at the first bookmark
 already known), and **Sign out** clears the session cookie.
 
 `/health` is a standing diagnostic route (env var presence, the exact
-callback URL this deployment sends, outbound reachability to api.x.com) —
-useful any time login breaks.
+callback URL this deployment sends, outbound reachability to api.x.com
+and api.whop.com) — useful any time login or checkout breaks.
 
 ## Notes
 
@@ -155,3 +212,13 @@ useful any time login breaks.
   public.test.ts`, which asserts that against the actual generated SQL
   (via drizzle's `.toSQL()`, no live DB needed) rather than just eyeballing
   the code — run it after touching that file.
+- Phase 6's paid gate: `users.membership_active` is written in exactly one
+  place, `src/app/api/webhooks/whop/route.ts`, in response to a
+  signature-verified webhook — nothing else sets it. `src/lib/whop.ts` is
+  the one vendor module for Whop (mirrors `src/lib/x.ts`'s role for X);
+  `npm test` also runs `src/lib/whop.test.ts`, which signs real test
+  payloads with the actual `standardwebhooks` crypto Whop uses and checks
+  that tampered bodies, wrong secrets, and missing signature headers are
+  all rejected. Revalidation (Phase 4) and the login-triggered background
+  sync (Phase 2) both skip accounts without `membership_active` — a lapsed
+  or never-paying account shouldn't cost real X API calls.

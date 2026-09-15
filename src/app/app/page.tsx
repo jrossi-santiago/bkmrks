@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { eq, and, isNull, inArray, notInArray, desc } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
-import { bookmarks, bookmarkTags } from "@/lib/db/schema";
+import { bookmarks, bookmarkTags, users } from "@/lib/db/schema";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
 import { BookmarkCard } from "@/components/BookmarkCard";
 import { TagFilterBar } from "@/components/TagFilterBar";
@@ -16,7 +16,7 @@ import { TagManager } from "@/components/TagManager";
 export default async function AppPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tags?: string; untagged?: string }>;
+  searchParams: Promise<{ tags?: string; untagged?: string; checkout?: string }>;
 }) {
   const cookieStore = await cookies();
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
@@ -24,10 +24,39 @@ export default async function AppPage({
   if (!session) redirect("/login");
 
   const params = await searchParams;
+
+  // Phase 6 paid gate. Not active -> normally straight to /subscribe;
+  // the one exception is landing here right after a Whop checkout
+  // redirect, where the membership.activated webhook may not have been
+  // processed yet (Whop's own guidance: react to the webhook, don't poll)
+  // — show a "just a moment" message in place instead of bouncing back to
+  // /subscribe, which would just bounce them right back here anyway.
+  const db = getDb();
+  const [user] = await db
+    .select({ membershipActive: users.membershipActive })
+    .from(users)
+    .where(eq(users.id, session.userId))
+    .limit(1);
+
+  if (!user?.membershipActive) {
+    if (params.checkout !== "return") redirect("/subscribe");
+    return (
+      <main className="mx-auto max-w-md px-4 py-16 text-center">
+        <h1 className="mb-2 text-lg font-semibold">Confirming your membership&hellip;</h1>
+        <p className="mb-6 text-sm text-neutral-500">
+          This usually takes a few seconds. If it&apos;s been longer than a minute, try
+          reloading.
+        </p>
+        <a href="/app" className="text-sm underline">
+          Reload
+        </a>
+      </main>
+    );
+  }
+
   const untagged = params.untagged === "1";
   const selectedTagIds = new Set(untagged ? [] : (params.tags?.split(",").filter(Boolean) ?? []));
 
-  const db = getDb();
   const conditions = [eq(bookmarks.userId, session.userId), isNull(bookmarks.deletedAt)];
   if (untagged) {
     conditions.push(

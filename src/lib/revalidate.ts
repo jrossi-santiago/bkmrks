@@ -1,6 +1,6 @@
 import { eq, and, isNull, inArray, asc } from "drizzle-orm";
 import { getDb } from "./db/client";
-import { bookmarks, revalidationRuns } from "./db/schema";
+import { bookmarks, revalidationRuns, users } from "./db/schema";
 import { getTweetsByIds, TWEET_LOOKUP_MAX_IDS } from "./x";
 import { getValidAccessToken } from "./db/users";
 
@@ -43,7 +43,10 @@ export async function runRevalidation(): Promise<RevalidateResult> {
         metrics: bookmarks.metrics,
       })
       .from(bookmarks)
-      .where(isNull(bookmarks.deletedAt))
+      .innerJoin(users, eq(users.id, bookmarks.userId))
+      // Phase 6: no point spending X API calls (real, metered cost) keeping
+      // a lapsed or never-paying account's bookmarks fresh.
+      .where(and(isNull(bookmarks.deletedAt), eq(users.membershipActive, true)))
       .orderBy(asc(bookmarks.lastVerifiedAt))
       .limit(MAX_BOOKMARKS_PER_RUN);
 
