@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq, and, isNull, inArray, notInArray, desc } from "drizzle-orm";
-import { decryptSession, SESSION_COOKIE } from "@/lib/session";
+import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
 import { bookmarks, bookmarkTags, users } from "@/lib/db/schema";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
@@ -22,6 +22,7 @@ export default async function AppPage({
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
   const session = raw ? await decryptSession(raw) : null;
   if (!session) redirect("/login");
+  const readingMode = cookieStore.get(READING_MODE_COOKIE)?.value === "1";
 
   const params = await searchParams;
 
@@ -103,6 +104,12 @@ export default async function AppPage({
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <form action="/app/reading-mode" method="post">
+            <input type="hidden" name="next" value={readingMode ? "0" : "1"} />
+            <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
+              Reading mode: {readingMode ? "on" : "off"}
+            </button>
+          </form>
           <form action="/app/refresh" method="post">
             <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
               Refresh
@@ -135,6 +142,7 @@ export default async function AppPage({
                 bookmark={bookmark}
                 tags={tagsByBookmark.get(bookmark.id) ?? []}
                 position={index + 1}
+                readingMode={readingMode}
               />
             </li>
           ))}

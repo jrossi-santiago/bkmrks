@@ -5,6 +5,11 @@ import { encryptString, decryptString } from "./crypto";
 
 export const SESSION_COOKIE = "bkmrks_session";
 
+// Plain (unencrypted) preference cookie — not session identity, just "hide
+// images/avatars on /app so it doesn't look like X at a glance." Nothing
+// sensitive, so it skips the encrypt/decrypt machinery above.
+export const READING_MODE_COOKIE = "bkmrks_reading_mode";
+
 export const sessionCookieOptions = {
   httpOnly: true,
   secure: true,

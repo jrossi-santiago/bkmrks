@@ -1,8 +1,23 @@
 import type { bookmarks } from "@/lib/db/schema";
+import type { XMedia } from "@/lib/x";
 import { addTagAction, removeTagAction } from "@/app/app/actions";
 
 type BookmarkRow = typeof bookmarks.$inferSelect;
 type Tag = { id: string; name: string };
+
+function MediaGrid({ media }: { media: XMedia[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {media.map((m) => {
+        const src = m.type === "photo" ? m.url : m.preview_image_url;
+        return src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={m.media_key} src={src} alt="" className="rounded-md object-cover" />
+        ) : null;
+      })}
+    </div>
+  );
+}
 
 // Respects X's Display Requirements: tweet text is rendered exactly as
 // stored (no truncation/rewriting), author attribution (avatar, name,
@@ -11,10 +26,12 @@ export function BookmarkCard({
   bookmark,
   tags,
   position,
+  readingMode = false,
 }: {
   bookmark: BookmarkRow;
   tags: Tag[];
   position: number;
+  readingMode?: boolean;
 }) {
   const tweetUrl = `https://x.com/${bookmark.authorHandle}/status/${bookmark.tweetId}`;
   const postedAt = new Date(bookmark.tweetCreatedAt);
@@ -23,7 +40,7 @@ export function BookmarkCard({
     <article className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
       <div className="mb-2 flex items-center gap-2">
         <span className="text-xs text-neutral-400">#{position}</span>
-        {bookmark.authorAvatarUrl && (
+        {!readingMode && bookmark.authorAvatarUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={bookmark.authorAvatarUrl} alt="" className="h-8 w-8 rounded-full" />
         )}
@@ -43,15 +60,20 @@ export function BookmarkCard({
       <p className="whitespace-pre-wrap text-sm">{bookmark.text}</p>
 
       {bookmark.media && bookmark.media.length > 0 && (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {bookmark.media.map((m) => {
-            const src = m.type === "photo" ? m.url : m.preview_image_url;
-            return src ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={m.media_key} src={src} alt="" className="rounded-md object-cover" />
-            ) : null;
-          })}
-        </div>
+        readingMode ? (
+          <details className="mt-3">
+            <summary className="cursor-pointer text-xs text-neutral-500 hover:underline [&::-webkit-details-marker]:hidden list-none">
+              Load image
+            </summary>
+            <div className="mt-2">
+              <MediaGrid media={bookmark.media} />
+            </div>
+          </details>
+        ) : (
+          <div className="mt-3">
+            <MediaGrid media={bookmark.media} />
+          </div>
+        )
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
