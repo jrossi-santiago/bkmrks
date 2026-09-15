@@ -1,13 +1,15 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq, and, isNull, inArray, notInArray, desc, sql } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, inArray, notInArray, desc, sql, cosineDistance, getTableColumns } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
 import { bookmarks, bookmarkTags, tags } from "@/lib/db/schema";
 import { getMembershipActive } from "@/lib/db/users";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
+import { embedTexts } from "@/lib/openai";
 import { AppHeader } from "@/components/AppHeader";
 import { BookmarkCard } from "@/components/BookmarkCard";
+import { SearchBar } from "@/components/SearchBar";
 import { TagFilterBar } from "@/components/TagFilterBar";
 import { TagManager } from "@/components/TagManager";
 
@@ -18,7 +20,7 @@ import { TagManager } from "@/components/TagManager";
 export default async function AppPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tags?: string; untagged?: string; public?: string; checkout?: string }>;
+  searchParams: Promise<{ tags?: string; untagged?: string; public?: string; checkout?: string; q?: string }>;
 }) {
   const cookieStore = await cookies();
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
@@ -58,6 +60,9 @@ export default async function AppPage({
   const selectedTagIds = new Set(
     untagged || publicOnly ? [] : (params.tags?.split(",").filter(Boolean) ?? [])
   );
+  // Phase 7: semantic search, composes with the tag filters above (AND) —
+  // not a separate mode.
+  const q = (params.q ?? "").trim();
 
   // Reused below both to filter (?untagged=1) and to check whether the
   // "Untagged" chip should even be shown (no point offering a filter that's
@@ -90,15 +95,36 @@ export default async function AppPage({
     );
   }
 
-  const rows = await db
-    .select()
-    .from(bookmarks)
-    .where(and(...conditions))
-    .orderBy(desc(bookmarks.sourceOrder));
-  // desc() on sourceOrder is intentional even though newer bookmarks get
-  // more-negative values (see schema.ts) — it sorts furthest-below-zero
-  // (i.e. most recently added) first once compared against older, less
-  // negative values.
+  // Every column except `embedding` — a 1536-float vector BookmarkCard
+  // never renders, not worth shipping in the page payload.
+  const { embedding: _embedding, ...bookmarkColumns } = getTableColumns(bookmarks);
+
+  // Phase 7: ranked by semantic similarity to `q` instead of recency when a
+  // search is active. Bookmarks with no embedding yet (still-pending, per
+  // src/lib/embed.ts) are excluded rather than left to sort arbitrarily —
+  // Postgres puts NULLs first on a DESC order by default, which would bury
+  // real matches under un-embedded rows.
+  let rows;
+  if (q) {
+    const [queryEmbedding] = await embedTexts([q]);
+    const similarity = sql<number>`1 - (${cosineDistance(bookmarks.embedding, queryEmbedding)})`;
+    rows = await db
+      .select(bookmarkColumns)
+      .from(bookmarks)
+      .where(and(...conditions, isNotNull(bookmarks.embedding)))
+      .orderBy(desc(similarity))
+      .limit(30);
+  } else {
+    // desc() on sourceOrder is intentional even though newer bookmarks get
+    // more-negative values (see schema.ts) — it sorts furthest-below-zero
+    // (i.e. most recently added) first once compared against older, less
+    // negative values.
+    rows = await db
+      .select(bookmarkColumns)
+      .from(bookmarks)
+      .where(and(...conditions))
+      .orderBy(desc(bookmarks.sourceOrder));
+  }
 
   const [allTags, tagsByBookmark, [untaggedCountRow]] = await Promise.all([
     getUserTagsWithCounts(session.userId),
@@ -131,6 +157,7 @@ export default async function AppPage({
 
       <h1 className="mb-4 text-lg font-semibold">Your bookmarks</h1>
 
+      <SearchBar q={q} selectedTagIds={selectedTagIds} untagged={untagged} publicOnly={publicOnly} />
       <TagFilterBar
         allTags={allTags}
         selectedTagIds={selectedTagIds}
@@ -138,14 +165,17 @@ export default async function AppPage({
         publicOnly={publicOnly}
         hasUntagged={hasUntagged}
         hasPublicBookmarks={hasPublicBookmarks}
+        q={q}
       />
       <TagManager allTags={allTags} handle={session.username} />
 
       {rows.length === 0 ? (
         <p className="text-neutral-500">
-          {untagged || publicOnly || selectedTagIds.size > 0
-            ? "No bookmarks match this filter."
-            : "No bookmarks synced yet — if you just signed in, the first sync runs in the background and may take a moment. Try Refresh."}
+          {q
+            ? "No bookmarks match your search."
+            : untagged || publicOnly || selectedTagIds.size > 0
+              ? "No bookmarks match this filter."
+              : "No bookmarks synced yet — if you just signed in, the first sync runs in the background and may take a moment. Try Refresh."}
         </p>
       ) : (
         <ol className="space-y-4">

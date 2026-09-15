@@ -2,7 +2,9 @@ import type { bookmarks } from "@/lib/db/schema";
 import type { XMedia } from "@/lib/x";
 import { addTagAction, removeTagAction, addToPublicAction } from "@/app/app/actions";
 
-type BookmarkRow = typeof bookmarks.$inferSelect;
+// /app/page.tsx selects every column except `embedding` (a 1536-float
+// vector nothing here renders — no reason to ship it in the page payload).
+type BookmarkRow = Omit<typeof bookmarks.$inferSelect, "embedding">;
 type Tag = { id: string; name: string };
 
 function MediaGrid({ media }: { media: XMedia[] }) {

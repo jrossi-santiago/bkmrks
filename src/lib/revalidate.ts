@@ -99,7 +99,10 @@ export async function runRevalidation(): Promise<RevalidateResult> {
             .update(bookmarks)
             .set(
               changed
-                ? { text: tweet.text, media: newMedia, metrics: newMetrics, lastVerifiedAt: new Date() }
+                // Phase 7: text changed, so the stored embedding (if any) no
+                // longer matches — null it out to re-enter the pending
+                // queue src/lib/embed.ts drains.
+                ? { text: tweet.text, media: newMedia, metrics: newMetrics, lastVerifiedAt: new Date(), embedding: null }
                 : { lastVerifiedAt: new Date() }
             )
             .where(eq(bookmarks.id, existing.id));

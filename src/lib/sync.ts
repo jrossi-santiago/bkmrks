@@ -3,6 +3,7 @@ import { getDb } from "./db/client";
 import { bookmarks, syncRuns, users } from "./db/schema";
 import { getBookmarks } from "./x";
 import { getValidAccessToken } from "./db/users";
+import { embedPendingBookmarks } from "./embed";
 
 export type SyncResult = { fetched: number; new: number; apiCalls: number };
 
@@ -100,6 +101,17 @@ export async function runSync(userId: string): Promise<SyncResult> {
       if (stop) break;
       paginationToken = page.meta?.next_token;
       if (!paginationToken) break;
+    }
+
+    // Phase 7: embed whatever's pending for this user (newly-synced
+    // bookmarks, plus any backlog from before this feature shipped).
+    // Failure here shouldn't mark an otherwise-successful X sync as
+    // "error" — embedding IS NULL just stays the pending state, and the
+    // cron at /api/cron/embed catches up anything missed.
+    try {
+      await embedPendingBookmarks({ userId });
+    } catch (err) {
+      console.error(`embedPendingBookmarks failed for user ${userId}`, err);
     }
 
     await db

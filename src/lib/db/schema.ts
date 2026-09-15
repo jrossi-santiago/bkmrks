@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, jsonb, boolean, uniqueIndex, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, jsonb, boolean, vector, uniqueIndex, primaryKey } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import type { XMedia } from "../x";
 
@@ -49,6 +49,11 @@ export const bookmarks = pgTable(
     sourceOrder: integer("source_order").notNull(),
     lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }), // Phase 4: soft delete when source tweet is gone
+    // Phase 7: semantic search. NULL = not yet embedded, which doubles as
+    // the pending-work queue for src/lib/embed.ts — no separate status
+    // column. Cleared back to NULL by src/lib/revalidate.ts when a tweet's
+    // text changes, so a stale vector doesn't linger.
+    embedding: vector("embedding", { dimensions: 1536 }),
   },
   (table) => [uniqueIndex("bookmarks_user_tweet_unique").on(table.userId, table.tweetId)]
 );

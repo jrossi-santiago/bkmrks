@@ -113,6 +113,11 @@ Project → Settings → Environment Variables. Status:
       Secret column)
 - [ ] `WHOP_PLAN_ID` — from step 2b (the plan you created, `plan_...`)
 - [ ] `WHOP_API_BASE_URL` — optional, sandbox testing only (step 2b)
+- [ ] `OPENAI_API_KEY` — Phase 7 semantic search. From
+      platform.openai.com/api-keys. If your Postgres role can't
+      `CREATE EXTENSION vector` (migration 0004 will fail with a permissions
+      error), enable it manually first: Supabase dashboard → Database →
+      Extensions → search "vector" → Enable.
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
@@ -222,3 +227,11 @@ and api.whop.com) — useful any time login or checkout breaks.
   all rejected. Revalidation (Phase 4) and the login-triggered background
   sync (Phase 2) both skip accounts without `membership_active` — a lapsed
   or never-paying account shouldn't cost real X API calls.
+- Phase 7's semantic search: `src/lib/openai.ts` is the one vendor module
+  for OpenAI (mirrors `src/lib/x.ts`/`src/lib/whop.ts`). Bookmarks are
+  embedded automatically — as the last step of every sync (Phase 2) for
+  that user's own pending backlog, and by `/api/cron/embed` (same
+  CRON_SECRET-gated pattern as revalidation, daily at 10:00 UTC) as a
+  global safety net that also backfills bookmarks synced before this
+  feature shipped. Nothing to do here beyond setting `OPENAI_API_KEY` —
+  search on `/app` just starts working once a user's bookmarks have vectors.

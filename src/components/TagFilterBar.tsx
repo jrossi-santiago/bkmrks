@@ -1,3 +1,5 @@
+import { buildAppHref } from "@/lib/appUrl";
+
 export function TagFilterBar({
   allTags,
   selectedTagIds,
@@ -5,6 +7,7 @@ export function TagFilterBar({
   publicOnly,
   hasUntagged,
   hasPublicBookmarks,
+  q,
 }: {
   allTags: { id: string; name: string; count: number }[];
   selectedTagIds: Set<string>;
@@ -12,6 +15,7 @@ export function TagFilterBar({
   publicOnly: boolean;
   hasUntagged: boolean;
   hasPublicBookmarks: boolean;
+  q: string;
 }) {
   // A filter that would always show zero bookmarks just clutters the bar —
   // skip it, unless it's the one currently applied (so clearing it stays
@@ -26,7 +30,7 @@ export function TagFilterBar({
     const next = new Set(selectedTagIds);
     if (next.has(tagId)) next.delete(tagId);
     else next.add(tagId);
-    return next.size > 0 ? `/app?tags=${[...next].join(",")}` : "/app";
+    return buildAppHref({ tags: next.size > 0 ? [...next].join(",") : undefined, q });
   }
 
   const chipClass = (active: boolean) =>
@@ -44,17 +48,23 @@ export function TagFilterBar({
         </a>
       ))}
       {showUntagged && (
-        <a href={untagged ? "/app" : "/app?untagged=1"} className={chipClass(untagged)}>
+        <a
+          href={untagged ? buildAppHref({ q }) : buildAppHref({ untagged: "1", q })}
+          className={chipClass(untagged)}
+        >
           Untagged
         </a>
       )}
       {showPublic && (
-        <a href={publicOnly ? "/app" : "/app?public=1"} className={chipClass(publicOnly)}>
+        <a
+          href={publicOnly ? buildAppHref({ q }) : buildAppHref({ public: "1", q })}
+          className={chipClass(publicOnly)}
+        >
           Public
         </a>
       )}
       {(untagged || publicOnly || selectedTagIds.size > 0) && (
-        <a href="/app" className="text-xs text-neutral-400 hover:underline">
+        <a href={buildAppHref({ q })} className="text-xs text-neutral-400 hover:underline">
           Clear filters
         </a>
       )}
