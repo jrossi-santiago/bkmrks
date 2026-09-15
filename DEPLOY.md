@@ -31,11 +31,19 @@ At developer.x.com:
 
 Default per the brief: a Supabase project on the same account as replylane.
 Create a new project there, then Project Settings → Database → copy the
-**Transaction pooler** connection string (not Session pooler — matches the
-`prepare: false` config already in `src/lib/db/client.ts`, same lesson as
-replylane). Neon is a fine alternative if you want billing/project
-separation — same pooler caveat applies, the client config already handles
-it either way.
+**Transaction pooler** connection string (port `6543`, not Session pooler
+or the direct `5432` connection — matches the `prepare: false` config
+already in `src/lib/db/client.ts`, same lesson as replylane). Format:
+`postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`.
+
+Two gotchas when copying it:
+1. Supabase shows the URI with a `[YOUR-PASSWORD]` placeholder — swap in
+   the real database password before pasting into Vercel.
+2. If that password has special characters (`@`, `#`, `/`, etc.), it needs
+   to be URL-encoded or `postgres.js` will fail to parse the string.
+
+Neon is a fine alternative if you want billing/project separation — same
+pooler caveat applies, the client config already handles it either way.
 
 ## 4. Set env vars in Vercel
 
