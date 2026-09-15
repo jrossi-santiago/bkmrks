@@ -87,3 +87,19 @@ export const syncRuns = pgTable("sync_runs", {
   apiCalls: integer("api_calls").notNull().default(0),
   error: text("error"),
 });
+
+// Phase 4: logs the periodic compliance/hygiene job (src/lib/revalidate.ts)
+// separately from sync_runs — that table is per-user (one row per login/
+// refresh); this job runs once globally across all users per cron
+// invocation, so it doesn't fit sync_runs' shape.
+export const revalidationRuns = pgTable("revalidation_runs", {
+  id: text("id").primaryKey(),
+  startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  finishedAt: timestamp("finished_at", { withTimezone: true }),
+  status: text("status").notNull(), // "running" | "ok" | "error"
+  checkedCount: integer("checked_count").notNull().default(0),
+  deletedCount: integer("deleted_count").notNull().default(0), // newly soft-deleted this run
+  updatedCount: integer("updated_count").notNull().default(0), // text/media/metrics refreshed this run
+  apiCalls: integer("api_calls").notNull().default(0),
+  error: text("error"),
+});

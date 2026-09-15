@@ -130,6 +130,49 @@ export async function pingApi(): Promise<string> {
   }
 }
 
+export type TweetLookupResponse = {
+  data?: XTweet[];
+  includes?: { users?: XUser[]; media?: XMedia[] };
+  errors?: { value?: string; detail?: string; title?: string; type?: string }[];
+};
+
+// Confirmed against X's docs (docs.x.com/x-api/fundamentals/rate-limits and
+// the tweet-lookup reference): GET /2/tweets accepts at most 100 IDs per
+// request. Rate limit is 5,000 req/15-min for user-context auth, well above
+// anything Phase 4's revalidation job needs.
+export const TWEET_LOOKUP_MAX_IDS = 100;
+
+// GET /2/tweets — batch tweet lookup by ID, used by the Phase 4 revalidation
+// job to confirm bookmarked tweets still exist and to refresh media/text/
+// metrics. IDs missing from the response's `data` (deleted, suspended
+// author, account gone protected, etc.) are the caller's signal to
+// soft-delete — this function itself makes no read/write decisions.
+export async function getTweetsByIds(
+  accessToken: string,
+  ids: string[]
+): Promise<TweetLookupResponse> {
+  if (ids.length === 0) return { data: [] };
+  if (ids.length > TWEET_LOOKUP_MAX_IDS) {
+    throw new Error(
+      `getTweetsByIds: ${ids.length} ids exceeds X's limit of ${TWEET_LOOKUP_MAX_IDS} per request`
+    );
+  }
+
+  const url = new URL("https://api.x.com/2/tweets");
+  url.searchParams.set("ids", ids.join(","));
+  url.searchParams.set("tweet.fields", "created_at,author_id,attachments,public_metrics");
+  url.searchParams.set("expansions", "author_id,attachments.media_keys");
+  url.searchParams.set("user.fields", "username,name,profile_image_url");
+  url.searchParams.set(
+    "media.fields",
+    "media_key,type,url,preview_image_url,duration_ms,height,width,variants"
+  );
+
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!res.ok) throw new Error(`GET /2/tweets failed: HTTP ${res.status}`);
+  return res.json();
+}
+
 export async function getBookmarks(
   accessToken: string,
   userId: string,

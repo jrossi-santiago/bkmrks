@@ -65,6 +65,14 @@ Project → Settings → Environment Variables. Status:
 - [x] `DIRECT_URL` — set (session pooler, port 5432 — migrations only;
       NOT the "Direct connection" tab, that one's IPv6-only and unreachable
       from Vercel)
+- [ ] `CRON_SECRET` — Phase 4's revalidation cron (`/api/cron/revalidate`)
+      checks this against the `Authorization: Bearer ...` header Vercel
+      sends on every cron invocation. **Vercel does not generate or set
+      this for you** — generate one yourself (`openssl rand -base64 24` or
+      similar, 16+ chars) and add it as an env var with that exact value.
+      Without it, the route replies 401 to Vercel's own cron hits — check
+      Project → Cron Jobs → View Logs if revalidation looks like it isn't
+      running.
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
@@ -103,6 +111,18 @@ blindly — reconcile row-by-row instead.
 If you ever do have a terminal handy and want to run one manually:
 `DATABASE_URL=... DIRECT_URL=... npm run db:migrate`.
 
+## 5b. Cron job (Phase 4 revalidation)
+
+`vercel.json` declares one cron: `/api/cron/revalidate` daily at 09:00 UTC
+(Hobby plans only allow once/day, with actual firing time anywhere in that
+hour — this schedule works unchanged on Hobby or Pro). It picks up
+automatically on deploy, same as everything else in `vercel.json` — no
+manual step in the dashboard beyond setting `CRON_SECRET` (step 4 above).
+
+Verify it's actually running: Project → Cron Jobs in the Vercel dashboard
+shows the schedule and **View Logs** for past invocations — a 401 there
+means `CRON_SECRET` is missing or doesn't match what the route expects.
+
 ## 6. Try it
 
 Visit `https://<your-domain>/` and click **Sign in with X**. After
@@ -123,3 +143,9 @@ useful any time login breaks.
   module that talks to X — nothing else calls `api.x.com` directly.
 - X tokens live encrypted in the `users` table, never in the session
   cookie — the cookie only carries which user is signed in.
+- Phase 4's revalidation job (`src/lib/revalidate.ts`) checks at most 500
+  of the stalest-verified bookmarks per run (oldest `last_verified_at`
+  first), not every bookmark every day — bounds API calls/cost/duration
+  per run while still cycling through everything over successive days.
+  Watch `revalidation_runs` (and `sync_runs`, which is unrelated — one row
+  per login/refresh) to see what it's actually doing in production.
