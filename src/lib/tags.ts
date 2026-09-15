@@ -65,6 +65,21 @@ export async function removeTagFromBookmark(userId: string, bookmarkId: string, 
     .where(and(eq(bookmarkTags.bookmarkId, bookmarkId), eq(bookmarkTags.tagId, tagId)));
 }
 
+// Phase 5: the entire "sharing" mechanism — flipping this makes the tag
+// (and every bookmark carrying it) reachable, unauthenticated, at
+// /u/:handle/:tag (see src/lib/public.ts). Ownership check is in the WHERE
+// clause itself, not a separate lookup, so there's no window to toggle
+// someone else's tag by guessing its id.
+export async function setTagPublic(userId: string, tagId: string, isPublic: boolean) {
+  const db = getDb();
+  const [row] = await db
+    .update(tags)
+    .set({ isPublic })
+    .where(and(eq(tags.id, tagId), eq(tags.userId, userId)))
+    .returning({ id: tags.id });
+  if (!row) throw new Error("Tag not found.");
+}
+
 // Tags per bookmark, for a set of bookmark ids already known to belong to
 // this user (caller's responsibility — this doesn't re-check ownership).
 export async function getTagsForBookmarks(bookmarkIds: string[]) {

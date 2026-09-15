@@ -65,7 +65,7 @@ Project → Settings → Environment Variables. Status:
 - [x] `DIRECT_URL` — set (session pooler, port 5432 — migrations only;
       NOT the "Direct connection" tab, that one's IPv6-only and unreachable
       from Vercel)
-- [ ] `CRON_SECRET` — Phase 4's revalidation cron (`/api/cron/revalidate`)
+- [x] `CRON_SECRET` — Phase 4's revalidation cron (`/api/cron/revalidate`)
       checks this against the `Authorization: Bearer ...` header Vercel
       sends on every cron invocation. **Vercel does not generate or set
       this for you** — generate one yourself (`openssl rand -base64 24` or
@@ -149,3 +149,9 @@ useful any time login breaks.
   per run while still cycling through everything over successive days.
   Watch `revalidation_runs` (and `sync_runs`, which is unrelated — one row
   per login/refresh) to see what it's actually doing in production.
+- Phase 5's public routes (`/u/:handle`, `/u/:handle/:tag`) read only
+  through `src/lib/public.ts` — every query there re-checks
+  `is_public = true` at the SQL level. `npm test` runs `src/lib/
+  public.test.ts`, which asserts that against the actual generated SQL
+  (via drizzle's `.toSQL()`, no live DB needed) rather than just eyeballing
+  the code — run it after touching that file.

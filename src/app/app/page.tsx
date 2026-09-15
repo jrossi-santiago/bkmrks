@@ -7,6 +7,7 @@ import { bookmarks, bookmarkTags } from "@/lib/db/schema";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
 import { BookmarkCard } from "@/components/BookmarkCard";
 import { TagFilterBar } from "@/components/TagFilterBar";
+import { TagManager } from "@/components/TagManager";
 
 // Phase 2: reads from the database — bookmarks are synced on login and on
 // manual refresh (see /app/refresh), not fetched from X on every page load.
@@ -89,6 +90,7 @@ export default async function AppPage({
       <h1 className="mb-4 text-lg font-semibold">Your bookmarks</h1>
 
       <TagFilterBar allTags={allTags} selectedTagIds={selectedTagIds} untagged={untagged} />
+      <TagManager allTags={allTags} handle={session.username} />
 
       {rows.length === 0 ? (
         <p className="text-neutral-500">
