@@ -145,15 +145,49 @@ anything else:
 Write the real answers into this file before starting Phase 1.
 
 <!-- PHASE0_ANSWERS_START -->
-### Phase 0 answers — PENDING
+### Phase 0 answers — DONE
 
-Not yet answered. See `phase0/README.md` for the runbook. This section will
-be filled in with real values from an actual API call once:
+Verified with real OAuth 2.0 + PKCE logins and live API calls against
+`@thejosephrossi`'s own bookmarks, via the `/login` + `/api/auth/*` routes
+in this repo (deployed to Vercel).
 
-1. An X API app is registered at developer.x.com with OAuth 2.0 + PKCE
-   enabled and scopes `bookmark.read tweet.read users.read offline.access`.
-2. The `phase0/` scripts in this repo have been run end-to-end against that
-   app and a real account's bookmarks.
+1. **Tier/cost**: no fixed plan or base subscription fee — billing is
+   **pay-per-use**, ~$0.02/billable event (observed: $0.21 for 11 billable
+   events over the spike). Note: 15 total API requests were made in the
+   same window but only 11 were billable events — not every call type
+   appears to meter the same way; worth re-checking against a fuller
+   session before estimating Phase 2's full-backfill cost per user.
+2. **Rate limits**: real numbers from response headers, per authenticated
+   user (these came from a user-context OAuth 2.0 bearer token, not an
+   app-only token, so they scope to the signed-in user, not the app as a
+   whole):
+   - `GET /2/users/me`: 75 requests / 15-min window
+   - `GET /2/users/:id/bookmarks`: 180 requests / 15-min window
+3. **Per-bookmark timestamp**: each tweet carries a real `created_at`, but
+   it's the tweet's **original post time**, not when it was bookmarked — X
+   does not expose a "date bookmarked" field. Bookmark recency has to come
+   from response order (`source_order`), not `created_at`.
+4. **Media object**: fields present — `media_key`, `type`, `url`,
+   `preview_image_url`, `duration_ms`, `height`, `width`, `variants`.
+   `url` looked like a stable link, not a signed/expiring one, on manual
+   inspection — still worth periodically re-verifying in Phase 4, since
+   this isn't guaranteed by X's docs, just observed once.
+5. **Pagination direction — confirmed empirically**: bookmarked a brand
+   new tweet mid-session, re-fetched page 1, and it appeared first.
+   Bookmarks are returned **newest-bookmarked-first**, so the watermark
+   strategy (stop syncing at the first already-seen `tweet_id`) works for
+   Phase 2's incremental sync.
+6. **Token lifetime & refresh**: access token `expires_in` = 7200s (2h).
+   Refresh flow works as documented (`grant_type=refresh_token`) — **and X
+   rotates the refresh token on every use**: each refresh response
+   includes a new `refresh_token`. Token storage must overwrite the stored
+   refresh token on every refresh; reusing an old, rotated-away one will
+   likely fail.
+
+Spike tooling: `phase0/` (local scripts) and `app/login` + `app/api/auth/*`
+(live Vercel routes, doubling as the start of Phase 1's auth flow) —
+neither is the product's real `src/lib/x.ts` vendor module, which Phase 1
+builds from scratch using what's confirmed here.
 <!-- PHASE0_ANSWERS_END -->
 
 ## Phase 1 — Auth + one-shot render
