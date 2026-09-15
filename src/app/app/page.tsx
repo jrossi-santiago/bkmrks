@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db/client";
 import { bookmarks, bookmarkTags, tags } from "@/lib/db/schema";
 import { getMembershipActive } from "@/lib/db/users";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
+import { AppHeader } from "@/components/AppHeader";
 import { BookmarkCard } from "@/components/BookmarkCard";
 import { TagFilterBar } from "@/components/TagFilterBar";
 import { TagManager } from "@/components/TagManager";
@@ -121,39 +122,12 @@ export default async function AppPage({
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <header className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {session.avatarUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={session.avatarUrl} alt="" className="h-10 w-10 rounded-full" />
-          )}
-          <div>
-            <p className="font-semibold">{session.name}</p>
-            <p className="text-sm text-neutral-500">@{session.username}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <a href="/app/stats" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
-            Stats
-          </a>
-          <form action="/app/reading-mode" method="post">
-            <input type="hidden" name="next" value={readingMode ? "0" : "1"} />
-            <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
-              Reading mode: {readingMode ? "on" : "off"}
-            </button>
-          </form>
-          <form action="/app/refresh" method="post">
-            <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
-              Refresh
-            </button>
-          </form>
-          <form action="/app/sign-out" method="post">
-            <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
+      <AppHeader
+        name={session.name}
+        username={session.username}
+        avatarUrl={session.avatarUrl || null}
+        readingMode={readingMode}
+      />
 
       <h1 className="mb-4 text-lg font-semibold">Your bookmarks</h1>
 
