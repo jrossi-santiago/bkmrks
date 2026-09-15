@@ -45,6 +45,10 @@ Two gotchas when copying it:
 Neon is a fine alternative if you want billing/project separation — same
 pooler caveat applies, the client config already handles it either way.
 
+Also copy the **Direct connection** string (same page, "Direct connection"
+tab, port `5432`) — the migration tool needs it (step 5 explains why); the
+app itself never uses it.
+
 ## 4. Set env vars in Vercel
 
 Project → Settings → Environment Variables. Status:
@@ -55,7 +59,8 @@ Project → Settings → Environment Variables. Status:
       `openssl rand -base64 32`; encrypts the session cookie AND the X
       tokens stored at rest in the database — never commit the actual
       value anywhere)
-- [ ] `DATABASE_URL` — the pooler connection string from step 3
+- [ ] `DATABASE_URL` — the transaction pooler string (port 6543) from step 3
+- [ ] `DIRECT_URL` — the direct connection string (port 5432) from step 3
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
@@ -63,13 +68,21 @@ don't apply to an already-running deployment.
 ## 5. Migrations run automatically on deploy
 
 No terminal needed — the `vercel-build` script (`drizzle-kit migrate &&
-next build`) runs pending migrations against `DATABASE_URL` before every
-build, so as long as that env var is set, pushing to `main` (or clicking
+next build`) runs pending migrations before every build, so as long as
+`DATABASE_URL` and `DIRECT_URL` are set, pushing to `main` (or clicking
 Redeploy) is enough. Safe to run repeatedly: already-applied migrations are
 skipped.
 
+Migrations specifically use `DIRECT_URL`, not the pooled `DATABASE_URL` the
+app uses at runtime — Supabase's transaction pooler (pgBouncer) doesn't
+support the session-level behavior the migration tool needs, a separate
+issue from the `prepare: false` fix for the app's regular queries. If
+`DIRECT_URL` isn't set it falls back to `DATABASE_URL`, which is exactly
+the combination that failed with "applying migrations..." hanging and
+exiting 1 on Vercel — that's the symptom of this exact mismatch.
+
 If you ever do have a terminal handy and want to run one manually:
-`DATABASE_URL=... npm run db:migrate`.
+`DATABASE_URL=... DIRECT_URL=... npm run db:migrate`.
 
 ## 6. Try it
 
