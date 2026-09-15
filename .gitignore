@@ -1,5 +1,8 @@
 node_modules/
 .env
+.next/
+next-env.d.ts
+*.tsbuildinfo
 
 # Phase 0 spike state — contains OAuth tokens and code_verifier, never commit
 phase0/.state.json

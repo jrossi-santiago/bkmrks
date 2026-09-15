@@ -2,8 +2,10 @@
   "name": "bkmrks",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "phase0:auth-url": "node phase0/01-auth-url.mjs",
     "phase0:exchange": "node phase0/02-exchange-code.mjs",
     "phase0:me": "node phase0/03-fetch-me.mjs",
@@ -11,6 +13,15 @@
     "phase0:refresh": "node phase0/05-refresh-token.mjs"
   },
   "dependencies": {
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2"
   }
 }
