@@ -45,9 +45,11 @@ Two gotchas when copying it:
 Neon is a fine alternative if you want billing/project separation — same
 pooler caveat applies, the client config already handles it either way.
 
-Also copy the **Direct connection** string (same page, "Direct connection"
-tab, port `5432`) — the migration tool needs it (step 5 explains why); the
-app itself never uses it.
+Also copy the **Session pooler** string (same page, "Session pooler" tab,
+port `5432`) — the migration tool needs it (step 5 explains why); the app
+itself never uses it. Don't use the "Direct connection" tab instead — it
+resolves IPv6-only, which Vercel's build environment can't reach, and
+fails near-instantly.
 
 ## 4. Set env vars in Vercel
 
@@ -60,7 +62,8 @@ Project → Settings → Environment Variables. Status:
       tokens stored at rest in the database — never commit the actual
       value anywhere)
 - [ ] `DATABASE_URL` — the transaction pooler string (port 6543) from step 3
-- [ ] `DIRECT_URL` — the direct connection string (port 5432) from step 3
+- [ ] `DIRECT_URL` — the session pooler string (port 5432) from step 3 —
+      NOT the "Direct connection" tab (IPv6-only, unreachable from Vercel)
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
@@ -77,9 +80,12 @@ Migrations specifically use `DIRECT_URL`, not the pooled `DATABASE_URL` the
 app uses at runtime — Supabase's transaction pooler (pgBouncer) doesn't
 support the session-level behavior the migration tool needs, a separate
 issue from the `prepare: false` fix for the app's regular queries. If
-`DIRECT_URL` isn't set it falls back to `DATABASE_URL`, which is exactly
-the combination that failed with "applying migrations..." hanging and
-exiting 1 on Vercel — that's the symptom of this exact mismatch.
+`DIRECT_URL` isn't set it falls back to `DATABASE_URL`, which fails with
+"applying migrations..." hanging and exiting 1 on Vercel — the symptom of
+this mismatch. Use Supabase's **Session pooler** string for `DIRECT_URL`,
+not the literal "Direct connection" tab — that one resolves IPv6-only and
+fails near-instantly from Vercel's build environment (same symptom, different
+cause, easy to get both wrong in a row).
 
 If you ever do have a terminal handy and want to run one manually:
 `DATABASE_URL=... DIRECT_URL=... npm run db:migrate`.
