@@ -2,10 +2,12 @@ export function TagFilterBar({
   allTags,
   selectedTagIds,
   untagged,
+  publicOnly,
 }: {
   allTags: { id: string; name: string; count: number }[];
   selectedTagIds: Set<string>;
   untagged: boolean;
+  publicOnly: boolean;
 }) {
   if (allTags.length === 0) return null;
 
@@ -33,7 +35,10 @@ export function TagFilterBar({
       <a href={untagged ? "/app" : "/app?untagged=1"} className={chipClass(untagged)}>
         Untagged
       </a>
-      {(untagged || selectedTagIds.size > 0) && (
+      <a href={publicOnly ? "/app" : "/app?public=1"} className={chipClass(publicOnly)}>
+        Public
+      </a>
+      {(untagged || publicOnly || selectedTagIds.size > 0) && (
         <a href="/app" className="text-xs text-neutral-400 hover:underline">
           Clear filters
         </a>

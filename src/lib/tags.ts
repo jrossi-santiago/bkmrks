@@ -50,11 +50,29 @@ async function assertOwnsBookmark(userId: string, bookmarkId: string) {
   if (!row) throw new Error("Bookmark not found.");
 }
 
-export async function addTagToBookmark(userId: string, bookmarkId: string, tagName: string) {
+export async function addTagToBookmark(
+  userId: string,
+  bookmarkId: string,
+  tagName: string
+): Promise<string> {
   await assertOwnsBookmark(userId, bookmarkId);
   const tagId = await findOrCreateTag(userId, tagName);
   const db = getDb();
   await db.insert(bookmarkTags).values({ bookmarkId, tagId }).onConflictDoNothing();
+  return tagId;
+}
+
+// The default public-sharing shortcut: instead of creating a tag by hand
+// and flipping it public via Manage tags, this finds-or-creates a tag
+// named "Public" and ensures it's public, then applies it — reuses
+// addTagToBookmark + setTagPublic rather than duplicating either. Removing
+// a bookmark from public reuses the existing tag-chip removal
+// (removeTagAction) since the "Public" tag just shows up like any other tag.
+export const DEFAULT_PUBLIC_TAG_NAME = "Public";
+
+export async function addBookmarkToPublicTag(userId: string, bookmarkId: string) {
+  const tagId = await addTagToBookmark(userId, bookmarkId, DEFAULT_PUBLIC_TAG_NAME);
+  await setTagPublic(userId, tagId, true);
 }
 
 export async function removeTagFromBookmark(userId: string, bookmarkId: string, tagId: string) {

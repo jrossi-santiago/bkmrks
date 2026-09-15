@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { decryptSession, SESSION_COOKIE } from "@/lib/session";
-import { addTagToBookmark, removeTagFromBookmark, setTagPublic } from "@/lib/tags";
+import { addTagToBookmark, removeTagFromBookmark, setTagPublic, addBookmarkToPublicTag } from "@/lib/tags";
 
 async function requireUserId(): Promise<string> {
   const cookieStore = await cookies();
@@ -26,6 +26,13 @@ export async function removeTagAction(formData: FormData) {
   const bookmarkId = String(formData.get("bookmarkId") ?? "");
   const tagId = String(formData.get("tagId") ?? "");
   await removeTagFromBookmark(userId, bookmarkId, tagId);
+  revalidatePath("/app");
+}
+
+export async function addToPublicAction(formData: FormData) {
+  const userId = await requireUserId();
+  const bookmarkId = String(formData.get("bookmarkId") ?? "");
+  await addBookmarkToPublicTag(userId, bookmarkId);
   revalidatePath("/app");
 }
 

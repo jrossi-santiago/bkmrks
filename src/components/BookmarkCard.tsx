@@ -1,6 +1,6 @@
 import type { bookmarks } from "@/lib/db/schema";
 import type { XMedia } from "@/lib/x";
-import { addTagAction, removeTagAction } from "@/app/app/actions";
+import { addTagAction, removeTagAction, addToPublicAction } from "@/app/app/actions";
 
 type BookmarkRow = typeof bookmarks.$inferSelect;
 type Tag = { id: string; name: string };
@@ -27,11 +27,13 @@ export function BookmarkCard({
   tags,
   position,
   readingMode = false,
+  isPublic = false,
 }: {
   bookmark: BookmarkRow;
   tags: Tag[];
   position: number;
   readingMode?: boolean;
+  isPublic?: boolean;
 }) {
   const tweetUrl = `https://x.com/${bookmark.authorHandle}/status/${bookmark.tweetId}`;
   const postedAt = new Date(bookmark.tweetCreatedAt);
@@ -99,6 +101,17 @@ export function BookmarkCard({
             className="w-16 rounded-full border border-neutral-200 bg-transparent px-2 py-0.5 text-xs placeholder:text-neutral-400 focus:w-24 focus:outline-none dark:border-neutral-700"
           />
         </form>
+        {!isPublic && (
+          <form action={addToPublicAction} className="inline-flex">
+            <input type="hidden" name="bookmarkId" value={bookmark.id} />
+            <button
+              type="submit"
+              className="rounded-full border border-dashed border-neutral-300 px-2 py-0.5 text-xs text-neutral-500 hover:border-neutral-400 hover:text-neutral-700 dark:border-neutral-700 dark:hover:border-neutral-500 dark:hover:text-neutral-300"
+            >
+              Add to public page
+            </button>
+          </form>
+        )}
       </div>
 
       <div className="mt-3 flex items-center justify-between text-xs text-neutral-500">

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { eq, and, isNull, inArray, notInArray, desc } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
-import { bookmarks, bookmarkTags, users } from "@/lib/db/schema";
+import { bookmarks, bookmarkTags, tags, users } from "@/lib/db/schema";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
 import { BookmarkCard } from "@/components/BookmarkCard";
 import { TagFilterBar } from "@/components/TagFilterBar";
@@ -16,7 +16,7 @@ import { TagManager } from "@/components/TagManager";
 export default async function AppPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tags?: string; untagged?: string; checkout?: string }>;
+  searchParams: Promise<{ tags?: string; untagged?: string; public?: string; checkout?: string }>;
 }) {
   const cookieStore = await cookies();
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
@@ -56,12 +56,26 @@ export default async function AppPage({
   }
 
   const untagged = params.untagged === "1";
-  const selectedTagIds = new Set(untagged ? [] : (params.tags?.split(",").filter(Boolean) ?? []));
+  const publicOnly = !untagged && params.public === "1";
+  const selectedTagIds = new Set(
+    untagged || publicOnly ? [] : (params.tags?.split(",").filter(Boolean) ?? [])
+  );
 
   const conditions = [eq(bookmarks.userId, session.userId), isNull(bookmarks.deletedAt)];
   if (untagged) {
     conditions.push(
       notInArray(bookmarks.id, db.select({ id: bookmarkTags.bookmarkId }).from(bookmarkTags))
+    );
+  } else if (publicOnly) {
+    conditions.push(
+      inArray(
+        bookmarks.id,
+        db
+          .select({ id: bookmarkTags.bookmarkId })
+          .from(bookmarkTags)
+          .innerJoin(tags, eq(tags.id, bookmarkTags.tagId))
+          .where(and(eq(tags.userId, session.userId), eq(tags.isPublic, true)))
+      )
     );
   } else if (selectedTagIds.size > 0) {
     conditions.push(
@@ -89,6 +103,7 @@ export default async function AppPage({
     getUserTagsWithCounts(session.userId),
     getTagsForBookmarks(rows.map((r) => r.id)),
   ]);
+  const publicTagIds = new Set(allTags.filter((t) => t.isPublic).map((t) => t.id));
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -125,12 +140,17 @@ export default async function AppPage({
 
       <h1 className="mb-4 text-lg font-semibold">Your bookmarks</h1>
 
-      <TagFilterBar allTags={allTags} selectedTagIds={selectedTagIds} untagged={untagged} />
+      <TagFilterBar
+        allTags={allTags}
+        selectedTagIds={selectedTagIds}
+        untagged={untagged}
+        publicOnly={publicOnly}
+      />
       <TagManager allTags={allTags} handle={session.username} />
 
       {rows.length === 0 ? (
         <p className="text-neutral-500">
-          {untagged || selectedTagIds.size > 0
+          {untagged || publicOnly || selectedTagIds.size > 0
             ? "No bookmarks match this filter."
             : "No bookmarks synced yet — if you just signed in, the first sync runs in the background and may take a moment. Try Refresh."}
         </p>
@@ -143,6 +163,7 @@ export default async function AppPage({
                 tags={tagsByBookmark.get(bookmark.id) ?? []}
                 position={index + 1}
                 readingMode={readingMode}
+                isPublic={(tagsByBookmark.get(bookmark.id) ?? []).some((t) => publicTagIds.has(t.id))}
               />
             </li>
           ))}
