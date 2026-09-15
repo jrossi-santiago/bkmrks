@@ -60,20 +60,16 @@ Project → Settings → Environment Variables. Status:
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
 
-## 5. Run the migration
+## 5. Migrations run automatically on deploy
 
-Once `DATABASE_URL` is set somewhere you can reach it from (your own
-machine, or paste it into a local `.env`):
+No terminal needed — the `vercel-build` script (`drizzle-kit migrate &&
+next build`) runs pending migrations against `DATABASE_URL` before every
+build, so as long as that env var is set, pushing to `main` (or clicking
+Redeploy) is enough. Safe to run repeatedly: already-applied migrations are
+skipped.
 
-```
-npm install
-npm run db:migrate
-```
-
-This creates the `users`, `bookmarks`, and `sync_runs` tables (see
-`drizzle/0000_simple_toro.sql`). Only needs to run once per database, and
-again after any future schema change (`npm run db:generate` first to
-produce the new migration file).
+If you ever do have a terminal handy and want to run one manually:
+`DATABASE_URL=... npm run db:migrate`.
 
 ## 6. Try it
 
