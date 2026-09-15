@@ -63,6 +63,18 @@ export async function getValidAccessToken(userId: string): Promise<string> {
   return refreshed.access_token;
 }
 
+// Phase 6 paid gate check — shared by every route that requires an active
+// membership (dashboard, refresh, stats) so the query lives in one place.
+export async function getMembershipActive(userId: string): Promise<boolean> {
+  const db = getDb();
+  const [user] = await db
+    .select({ membershipActive: users.membershipActive })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return user?.membershipActive ?? false;
+}
+
 // Phase 6: the only place membership_active is ever written, called
 // exclusively from the verified Whop webhook handler
 // (src/app/api/webhooks/whop/route.ts) — never from anything a browser

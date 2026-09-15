@@ -263,3 +263,28 @@ a browser extension or share-sheet for saving things beyond X bookmarks,
 per-bookmark sharing overrides independent of tags, comments/reactions on
 public pages, a "discover other people's public tags" browse feature. All
 real ideas. None of them ship before Phases 0–6 are done and in daily use.
+
+## Phase 8 — Reading mode, quick public sharing, stats
+
+Post-launch additions once Phases 0–6 were in daily use. Each extends an
+existing Phase 3/5 mechanism rather than introducing a new one — no schema
+change, no new dependency.
+
+- **Reading mode**: a cookie-based toggle on `/app` (`bkmrks_reading_mode`,
+  same plain-POST pattern as Refresh/Sign out) that hides author avatars and
+  replaces each post's media with a native `<details>` "Load image"
+  disclosure — no client JS, and it only reveals that one post's image(s).
+  Only affects the private dashboard, not public share pages.
+- **Default public tag**: an "Add to public page" button on each bookmark
+  card that find-or-creates a tag named "Public" and marks it public —
+  reuses the Phase 5 tag/`is_public` mechanism instead of adding a
+  per-bookmark override (still explicitly out of scope, per Phase 7).
+  Removing a bookmark from public reuses the existing tag-chip removal.
+  A "Public" filter chip on `/app` shows only bookmarks carrying any
+  public tag — an owner-side view of "what my audience sees," not the
+  cross-user discovery feature Phase 7 still defers.
+- **Stats page** (`/app/stats`): all-time bookmark/public/tag counts and a
+  12-week activity sparkline, aggregated from existing tables — no new
+  tracking. A "Share to X" link pre-fills the stats as tweet text (X's
+  share-intent URL can't attach an image for you regardless, so no
+  image-export tooling was added for this).

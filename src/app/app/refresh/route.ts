@@ -1,9 +1,7 @@
 import { cookies } from "next/headers";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { decryptSession, SESSION_COOKIE } from "@/lib/session";
-import { getDb } from "@/lib/db/client";
-import { users } from "@/lib/db/schema";
+import { getMembershipActive } from "@/lib/db/users";
 import { runSync } from "@/lib/sync";
 
 // Manual "Refresh" button — runs synchronously (unlike the login-triggered
@@ -18,13 +16,8 @@ export async function POST(request: NextRequest) {
   // Phase 6 paid gate — the /app page won't render this form for a lapsed
   // membership, but this costs real X API calls, so it's checked directly
   // rather than trusting the page didn't render the button.
-  const db = getDb();
-  const [user] = await db
-    .select({ membershipActive: users.membershipActive })
-    .from(users)
-    .where(eq(users.id, session.userId))
-    .limit(1);
-  if (!user?.membershipActive) return NextResponse.redirect(new URL("/subscribe", request.url));
+  const membershipActive = await getMembershipActive(session.userId);
+  if (!membershipActive) return NextResponse.redirect(new URL("/subscribe", request.url));
 
   await runSync(session.userId).catch((err) => console.error("manual refresh failed", err));
 

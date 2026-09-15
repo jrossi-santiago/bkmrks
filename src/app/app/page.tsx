@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { eq, and, isNull, inArray, notInArray, desc } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
-import { bookmarks, bookmarkTags, tags, users } from "@/lib/db/schema";
+import { bookmarks, bookmarkTags, tags } from "@/lib/db/schema";
+import { getMembershipActive } from "@/lib/db/users";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
 import { BookmarkCard } from "@/components/BookmarkCard";
 import { TagFilterBar } from "@/components/TagFilterBar";
@@ -33,13 +34,9 @@ export default async function AppPage({
   // — show a "just a moment" message in place instead of bouncing back to
   // /subscribe, which would just bounce them right back here anyway.
   const db = getDb();
-  const [user] = await db
-    .select({ membershipActive: users.membershipActive })
-    .from(users)
-    .where(eq(users.id, session.userId))
-    .limit(1);
+  const membershipActive = await getMembershipActive(session.userId);
 
-  if (!user?.membershipActive) {
+  if (!membershipActive) {
     if (params.checkout !== "return") redirect("/subscribe");
     return (
       <main className="mx-auto max-w-md px-4 py-16 text-center">
@@ -119,6 +116,9 @@ export default async function AppPage({
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <a href="/app/stats" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
+            Stats
+          </a>
           <form action="/app/reading-mode" method="post">
             <input type="hidden" name="next" value={readingMode ? "0" : "1"} />
             <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
