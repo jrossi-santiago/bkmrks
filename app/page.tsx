@@ -6,6 +6,10 @@ export default function Home() {
         Phase 0 vendor spike. <a href="/login">Sign in with X</a> to fetch your
         bookmarks once via the API and dump the raw response for inspection.
       </p>
+      <p>
+        <a href="/health">/health</a> — check env vars and the exact
+        callback URL this deployment will send, without logging in.
+      </p>
     </main>
   );
 }
