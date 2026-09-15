@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { pingApi } from "@/lib/x";
 
 // Diagnostic page — no secrets rendered, just presence/length of env vars and
 // the exact redirect_uri /login will send, since a mismatch against the
@@ -7,23 +8,17 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   const clientId = process.env.X_CLIENT_ID;
   const clientSecret = process.env.X_CLIENT_SECRET;
+  const sessionSecret = process.env.SESSION_SECRET;
   const host = request.headers.get("host") ?? "(no host header)";
   const redirectUri = `${request.nextUrl.protocol}//${host}/api/auth/callback`;
 
-  let apiReachable: string;
-  try {
-    const res = await fetch("https://api.x.com/2/openapi.json", {
-      signal: AbortSignal.timeout(5000),
-    });
-    apiReachable = `HTTP ${res.status} (any response here means DNS/TLS/routing to api.x.com works)`;
-  } catch (err) {
-    apiReachable = `fetch failed: ${err instanceof Error ? err.message : String(err)}`;
-  }
+  const apiReachable = await pingApi();
 
   const lines = [
     "=== env ===",
     `X_CLIENT_ID: ${describe(clientId)}`,
     `X_CLIENT_SECRET: ${describe(clientSecret)}`,
+    `SESSION_SECRET: ${describe(sessionSecret)}`,
     `NODE_ENV: ${process.env.NODE_ENV ?? "(unset)"}`,
     `VERCEL_ENV: ${process.env.VERCEL_ENV ?? "(unset — not running on Vercel?)"}`,
     `VERCEL_URL: ${process.env.VERCEL_URL ?? "(unset)"}`,
