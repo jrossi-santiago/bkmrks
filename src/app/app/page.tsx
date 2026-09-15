@@ -1,22 +1,29 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { eq, desc } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE } from "@/lib/session";
-import { getBookmarks } from "@/lib/x";
+import { getDb } from "@/lib/db/client";
+import { bookmarks } from "@/lib/db/schema";
 import { BookmarkCard } from "@/components/BookmarkCard";
 
-// Phase 1 exit criteria: sign in, see your own real bookmarks rendered
-// cleanly, end to end. Calls the bookmarks endpoint live on every load — no
-// database yet, that's Phase 2.
+// Phase 2: reads from the database — bookmarks are synced on login and on
+// manual refresh (see /app/refresh), not fetched from X on every page load.
 export default async function AppPage() {
   const cookieStore = await cookies();
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
   const session = raw ? await decryptSession(raw) : null;
   if (!session) redirect("/login");
 
-  const page = await getBookmarks(session.accessToken, session.userId);
-  const tweets = page.data ?? [];
-  const users = new Map((page.includes?.users ?? []).map((u) => [u.id, u]));
-  const media = new Map((page.includes?.media ?? []).map((m) => [m.media_key, m]));
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(bookmarks)
+    .where(eq(bookmarks.userId, session.userId))
+    .orderBy(desc(bookmarks.sourceOrder));
+  // desc() on sourceOrder is intentional even though newer bookmarks get
+  // more-negative values (see schema.ts) — it sorts furthest-below-zero
+  // (i.e. most recently added) first once compared against older, less
+  // negative values.
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -31,39 +38,35 @@ export default async function AppPage() {
             <p className="text-sm text-neutral-500">@{session.username}</p>
           </div>
         </div>
-        <form action="/app/sign-out" method="post">
-          <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
-            Sign out
-          </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <form action="/app/refresh" method="post">
+            <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
+              Refresh
+            </button>
+          </form>
+          <form action="/app/sign-out" method="post">
+            <button type="submit" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
+              Sign out
+            </button>
+          </form>
+        </div>
       </header>
 
       <h1 className="mb-4 text-lg font-semibold">Your bookmarks</h1>
 
-      {tweets.length === 0 ? (
-        <p className="text-neutral-500">No bookmarks found.</p>
+      {rows.length === 0 ? (
+        <p className="text-neutral-500">
+          No bookmarks synced yet — if you just signed in, the first sync
+          runs in the background and may take a moment. Try Refresh.
+        </p>
       ) : (
         <ol className="space-y-4">
-          {tweets.map((tweet, index) => (
-            <li key={tweet.id}>
-              <BookmarkCard
-                tweet={tweet}
-                position={index + 1}
-                author={users.get(tweet.author_id)}
-                media={(tweet.attachments?.media_keys ?? [])
-                  .map((key) => media.get(key))
-                  .filter((m): m is NonNullable<typeof m> => Boolean(m))}
-              />
+          {rows.map((bookmark, index) => (
+            <li key={bookmark.id}>
+              <BookmarkCard bookmark={bookmark} position={index + 1} />
             </li>
           ))}
         </ol>
-      )}
-
-      {page.meta?.next_token && (
-        <p className="mt-6 text-sm text-neutral-500">
-          There are more bookmarks than shown here — paging through all of
-          them lands in Phase 2, once bookmarks are persisted to a database.
-        </p>
       )}
     </main>
   );

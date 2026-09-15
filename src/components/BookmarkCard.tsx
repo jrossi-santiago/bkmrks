@@ -1,50 +1,40 @@
-import type { XMedia, XTweet, XUser } from "@/lib/x";
+import type { bookmarks } from "@/lib/db/schema";
+
+type BookmarkRow = typeof bookmarks.$inferSelect;
 
 // Respects X's Display Requirements: tweet text is rendered exactly as
-// returned (no truncation/rewriting), author attribution (avatar, name,
+// stored (no truncation/rewriting), author attribution (avatar, name,
 // handle) is always shown, and every card links back to the original tweet.
-export function BookmarkCard({
-  tweet,
-  author,
-  media,
-  position,
-}: {
-  tweet: XTweet;
-  author?: XUser;
-  media: XMedia[];
-  position: number;
-}) {
-  const tweetUrl = author
-    ? `https://x.com/${author.username}/status/${tweet.id}`
-    : `https://x.com/i/status/${tweet.id}`;
-  const postedAt = new Date(tweet.created_at);
+export function BookmarkCard({ bookmark, position }: { bookmark: BookmarkRow; position: number }) {
+  const tweetUrl = `https://x.com/${bookmark.authorHandle}/status/${bookmark.tweetId}`;
+  const postedAt = new Date(bookmark.tweetCreatedAt);
 
   return (
     <article className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
       <div className="mb-2 flex items-center gap-2">
         <span className="text-xs text-neutral-400">#{position}</span>
-        {author?.profile_image_url && (
+        {bookmark.authorAvatarUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={author.profile_image_url} alt="" className="h-8 w-8 rounded-full" />
+          <img src={bookmark.authorAvatarUrl} alt="" className="h-8 w-8 rounded-full" />
         )}
         <div className="text-sm">
           <a
-            href={author ? `https://x.com/${author.username}` : "#"}
+            href={`https://x.com/${bookmark.authorHandle}`}
             target="_blank"
             rel="noreferrer"
             className="font-medium hover:underline"
           >
-            {author?.name ?? "Unknown"}
+            {bookmark.authorDisplayName}
           </a>{" "}
-          <span className="text-neutral-500">@{author?.username ?? "unknown"}</span>
+          <span className="text-neutral-500">@{bookmark.authorHandle}</span>
         </div>
       </div>
 
-      <p className="whitespace-pre-wrap text-sm">{tweet.text}</p>
+      <p className="whitespace-pre-wrap text-sm">{bookmark.text}</p>
 
-      {media.length > 0 && (
+      {bookmark.media && bookmark.media.length > 0 && (
         <div className="mt-3 grid grid-cols-2 gap-2">
-          {media.map((m) => {
+          {bookmark.media.map((m) => {
             const src = m.type === "photo" ? m.url : m.preview_image_url;
             return src ? (
               // eslint-disable-next-line @next/next/no-img-element

@@ -1,7 +1,10 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { exchangeCode, getMe } from "@/lib/x";
 import { encryptSession, SESSION_COOKIE, sessionCookieOptions, type Session } from "@/lib/session";
+import { upsertUserFromLogin } from "@/lib/db/users";
+import { runSync } from "@/lib/sync";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
@@ -37,19 +40,31 @@ export async function GET(request: NextRequest) {
     if (!token.refresh_token) {
       return fail("X didn't grant offline access — try logging in again.");
     }
-    const user = await getMe(token.access_token);
+    const xUser = await getMe(token.access_token);
 
-    const session: Session = {
-      userId: user.id,
-      username: user.username,
-      name: user.name,
-      avatarUrl: user.profile_image_url ?? "",
+    const userId = await upsertUserFromLogin({
+      xUserId: xUser.id,
+      xHandle: xUser.username,
+      xDisplayName: xUser.name,
+      xAvatarUrl: xUser.profile_image_url ?? "",
       accessToken: token.access_token,
       refreshToken: token.refresh_token,
-      expiresAt: Date.now() + token.expires_in * 1000,
-    };
+      expiresAt: new Date(Date.now() + token.expires_in * 1000),
+    });
 
+    const session: Session = {
+      userId,
+      username: xUser.username,
+      name: xUser.name,
+      avatarUrl: xUser.profile_image_url ?? "",
+    };
     cookieStore.set(SESSION_COOKIE, await encryptSession(session), sessionCookieOptions);
+
+    // Full backfill on first login, incremental sync (watermark) on every
+    // login after that — same function either way. Runs after the redirect
+    // is sent so login isn't blocked on however many bookmarks there are.
+    after(() => runSync(userId).catch((err) => console.error("sync failed", err)));
+
     return NextResponse.redirect(new URL("/app", request.url));
   } catch (err) {
     return fail(err instanceof Error ? err.message : "Login failed.");

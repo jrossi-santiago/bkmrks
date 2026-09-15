@@ -27,25 +27,54 @@ At developer.x.com:
 4. Keys and tokens tab → copy the **OAuth 2.0 Client ID** and **Client
    Secret**.
 
-## 3. Set env vars in Vercel
+## 3. Get a Postgres database
 
-Project → Settings → Environment Variables. Status as of Phase 1:
+Default per the brief: a Supabase project on the same account as replylane.
+Create a new project there, then Project Settings → Database → copy the
+**Transaction pooler** connection string (not Session pooler — matches the
+`prepare: false` config already in `src/lib/db/client.ts`, same lesson as
+replylane). Neon is a fine alternative if you want billing/project
+separation — same pooler caveat applies, the client config already handles
+it either way.
+
+## 4. Set env vars in Vercel
+
+Project → Settings → Environment Variables. Status:
 
 - [x] `X_CLIENT_ID` — set
 - [x] `X_CLIENT_SECRET` — set
 - [x] `SESSION_SECRET` — set (any long random string, e.g.
-      `openssl rand -base64 32`; encrypts the session cookie holding the
-      signed-in user's tokens — never commit the actual value anywhere)
+      `openssl rand -base64 32`; encrypts the session cookie AND the X
+      tokens stored at rest in the database — never commit the actual
+      value anywhere)
+- [ ] `DATABASE_URL` — the pooler connection string from step 3
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
 
-## 4. Try it
+## 5. Run the migration
+
+Once `DATABASE_URL` is set somewhere you can reach it from (your own
+machine, or paste it into a local `.env`):
+
+```
+npm install
+npm run db:migrate
+```
+
+This creates the `users`, `bookmarks`, and `sync_runs` tables (see
+`drizzle/0000_simple_toro.sql`). Only needs to run once per database, and
+again after any future schema change (`npm run db:generate` first to
+produce the new migration file).
+
+## 6. Try it
 
 Visit `https://<your-domain>/` and click **Sign in with X**. After
-approving, you land on `/app` — your real bookmarks, live from the X API,
-rendered as cards (avatar, handle, text, media, link back to the original
-tweet). **Sign out** clears the session cookie.
+approving, you land on `/app`. The first sync (full backfill) runs in the
+background — if the dashboard looks empty right after signing in, wait a
+moment and click **Refresh**. After that, bookmarks are read straight from
+the database; **Refresh** re-syncs (fast — it stops at the first bookmark
+already known), and **Sign out** clears the session cookie.
 
 `/health` is a standing diagnostic route (env var presence, the exact
 callback URL this deployment sends, outbound reachability to api.x.com) —
@@ -53,9 +82,8 @@ useful any time login breaks.
 
 ## Notes
 
-- No database yet (Phase 2) — the dashboard calls the bookmarks endpoint
-  live on every load, capped at one page (25 most recent). The signed-in
-  user's tokens live only in one encrypted, httpOnly cookie.
 - `phase0/`'s local scripts are throwaway spike tooling from before this
   app existed. Everywhere in the live app, `src/lib/x.ts` is the one vendor
   module that talks to X — nothing else calls `api.x.com` directly.
+- X tokens live encrypted in the `users` table, never in the session
+  cookie — the cookie only carries which user is signed in.
