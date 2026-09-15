@@ -29,12 +29,13 @@ At developer.x.com:
 
 ## 3. Set env vars in Vercel
 
-Project → Settings → Environment Variables:
+Project → Settings → Environment Variables. Status as of Phase 1:
 
-- `X_CLIENT_ID`
-- `X_CLIENT_SECRET`
-- `SESSION_SECRET` — any long random string (`openssl rand -base64 32`).
-  Encrypts the session cookie holding the signed-in user's tokens.
+- [x] `X_CLIENT_ID` — set
+- [x] `X_CLIENT_SECRET` — set
+- [x] `SESSION_SECRET` — set (any long random string, e.g.
+      `openssl rand -base64 32`; encrypts the session cookie holding the
+      signed-in user's tokens — never commit the actual value anywhere)
 
 Then **redeploy** — env var changes need a redeploy to take effect, they
 don't apply to an already-running deployment.
