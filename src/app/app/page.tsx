@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq, and, isNull, inArray, notInArray, desc } from "drizzle-orm";
+import { eq, and, isNull, inArray, notInArray, desc, sql } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
 import { bookmarks, bookmarkTags, tags } from "@/lib/db/schema";
@@ -58,11 +58,14 @@ export default async function AppPage({
     untagged || publicOnly ? [] : (params.tags?.split(",").filter(Boolean) ?? [])
   );
 
+  // Reused below both to filter (?untagged=1) and to check whether the
+  // "Untagged" chip should even be shown (no point offering a filter that's
+  // always empty).
+  const bookmarkIdsWithAnyTag = db.select({ id: bookmarkTags.bookmarkId }).from(bookmarkTags);
+
   const conditions = [eq(bookmarks.userId, session.userId), isNull(bookmarks.deletedAt)];
   if (untagged) {
-    conditions.push(
-      notInArray(bookmarks.id, db.select({ id: bookmarkTags.bookmarkId }).from(bookmarkTags))
-    );
+    conditions.push(notInArray(bookmarks.id, bookmarkIdsWithAnyTag));
   } else if (publicOnly) {
     conditions.push(
       inArray(
@@ -96,11 +99,25 @@ export default async function AppPage({
   // (i.e. most recently added) first once compared against older, less
   // negative values.
 
-  const [allTags, tagsByBookmark] = await Promise.all([
+  const [allTags, tagsByBookmark, [untaggedCountRow]] = await Promise.all([
     getUserTagsWithCounts(session.userId),
     getTagsForBookmarks(rows.map((r) => r.id)),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(bookmarks)
+      .where(
+        and(
+          eq(bookmarks.userId, session.userId),
+          isNull(bookmarks.deletedAt),
+          notInArray(bookmarks.id, bookmarkIdsWithAnyTag)
+        )
+      ),
   ]);
   const publicTagIds = new Set(allTags.filter((t) => t.isPublic).map((t) => t.id));
+  // Hide filter chips that would always show zero bookmarks — no point
+  // cluttering the bar with a filter that leads nowhere.
+  const hasUntagged = (untaggedCountRow?.count ?? 0) > 0;
+  const hasPublicBookmarks = allTags.some((t) => t.isPublic && t.count > 0);
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -145,6 +162,8 @@ export default async function AppPage({
         selectedTagIds={selectedTagIds}
         untagged={untagged}
         publicOnly={publicOnly}
+        hasUntagged={hasUntagged}
+        hasPublicBookmarks={hasPublicBookmarks}
       />
       <TagManager allTags={allTags} handle={session.username} />
 

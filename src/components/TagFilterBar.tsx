@@ -3,13 +3,24 @@ export function TagFilterBar({
   selectedTagIds,
   untagged,
   publicOnly,
+  hasUntagged,
+  hasPublicBookmarks,
 }: {
   allTags: { id: string; name: string; count: number }[];
   selectedTagIds: Set<string>;
   untagged: boolean;
   publicOnly: boolean;
+  hasUntagged: boolean;
+  hasPublicBookmarks: boolean;
 }) {
-  if (allTags.length === 0) return null;
+  // A filter that would always show zero bookmarks just clutters the bar —
+  // skip it, unless it's the one currently applied (so clearing it stays
+  // possible even if its count changed to 0 since the link was loaded).
+  const visibleTags = allTags.filter((tag) => tag.count > 0 || selectedTagIds.has(tag.id));
+  const showUntagged = hasUntagged || untagged;
+  const showPublic = hasPublicBookmarks || publicOnly;
+
+  if (visibleTags.length === 0 && !showUntagged && !showPublic) return null;
 
   function hrefToggling(tagId: string) {
     const next = new Set(selectedTagIds);
@@ -27,17 +38,21 @@ export function TagFilterBar({
 
   return (
     <div className="mb-6 flex flex-wrap items-center gap-2">
-      {allTags.map((tag) => (
+      {visibleTags.map((tag) => (
         <a key={tag.id} href={hrefToggling(tag.id)} className={chipClass(selectedTagIds.has(tag.id))}>
           {tag.name} ({tag.count})
         </a>
       ))}
-      <a href={untagged ? "/app" : "/app?untagged=1"} className={chipClass(untagged)}>
-        Untagged
-      </a>
-      <a href={publicOnly ? "/app" : "/app?public=1"} className={chipClass(publicOnly)}>
-        Public
-      </a>
+      {showUntagged && (
+        <a href={untagged ? "/app" : "/app?untagged=1"} className={chipClass(untagged)}>
+          Untagged
+        </a>
+      )}
+      {showPublic && (
+        <a href={publicOnly ? "/app" : "/app?public=1"} className={chipClass(publicOnly)}>
+          Public
+        </a>
+      )}
       {(untagged || publicOnly || selectedTagIds.size > 0) && (
         <a href="/app" className="text-xs text-neutral-400 hover:underline">
           Clear filters
