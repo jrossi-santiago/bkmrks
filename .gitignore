@@ -1,0 +1,6 @@
+node_modules/
+.env
+
+# Phase 0 spike state — contains OAuth tokens and code_verifier, never commit
+phase0/.state.json
+phase0-output/
