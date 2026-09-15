@@ -1,10 +1,14 @@
 import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { section, dump, dumpWithLinks } from "@/app/lib/dump";
+import { bookmarksApiUrl } from "@/app/lib/bookmarks";
 
 // Phase 0 spike: completes the OAuth exchange, resolves the user id, fetches
 // one page of bookmarks, and dumps everything needed to answer the Phase 0
 // checklist (rate limits, timestamp presence, media shape, pagination meta)
-// straight to the browser. No database, no persistence — throwaway by design.
+// straight to the browser. No database — the access token is cached in a
+// short-lived httpOnly cookie only so /api/auth/bookmarks can page through
+// results without a full re-login; it's discarded when the token expires.
 export async function GET(request: NextRequest) {
   const clientId = process.env.X_CLIENT_ID;
   const clientSecret = process.env.X_CLIENT_SECRET;
@@ -69,19 +73,7 @@ export async function GET(request: NextRequest) {
 
   const userId: string = meJson.data.id;
 
-  const bookmarksUrl = new URL(`https://api.x.com/2/users/${userId}/bookmarks`);
-  bookmarksUrl.searchParams.set("max_results", "10");
-  bookmarksUrl.searchParams.set(
-    "tweet.fields",
-    "created_at,author_id,attachments,public_metrics,entities,text"
-  );
-  bookmarksUrl.searchParams.set("expansions", "author_id,attachments.media_keys");
-  bookmarksUrl.searchParams.set("user.fields", "username,name,profile_image_url");
-  bookmarksUrl.searchParams.set(
-    "media.fields",
-    "media_key,type,url,preview_image_url,duration_ms,height,width,variants"
-  );
-
+  const bookmarksUrl = bookmarksApiUrl(userId);
   const bookmarksRes = await fetch(bookmarksUrl, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -91,27 +83,27 @@ export async function GET(request: NextRequest) {
   cookieStore.delete("x_code_verifier");
   cookieStore.delete("x_oauth_state");
 
-  return dump(sections.join("\n\n"));
-}
+  const cookieOpts = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: typeof tokenJson.expires_in === "number" ? tokenJson.expires_in : 3600,
+  };
+  cookieStore.set("x_access_token", accessToken, cookieOpts);
+  cookieStore.set("x_user_id", userId, cookieOpts);
+  if (tokenJson.refresh_token) {
+    cookieStore.set("x_refresh_token", tokenJson.refresh_token, cookieOpts);
+  }
 
-function section(label: string, res: Response, body: unknown): string {
-  const rateLimit: Record<string, string> = {};
-  res.headers.forEach((value, key) => {
-    if (key.toLowerCase().includes("rate-limit")) rateLimit[key] = value;
-  });
-  return [
-    `=== ${label} — HTTP ${res.status} ===`,
-    Object.keys(rateLimit).length ? `rate limit headers: ${JSON.stringify(rateLimit, null, 2)}` : null,
-    JSON.stringify(body, null, 2),
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
+  const nextToken = bookmarksJson.meta?.next_token;
+  const links = [
+    nextToken && {
+      href: `/api/auth/bookmarks?pagination_token=${encodeURIComponent(nextToken)}`,
+      label: "fetch next page →",
+    },
+    tokenJson.refresh_token && { href: "/api/auth/refresh", label: "test refresh token →" },
+  ].filter((l): l is { href: string; label: string } => Boolean(l));
 
-function dump(text: string) {
-  const escaped = text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
-  return new NextResponse(
-    `<!doctype html><meta charset="utf-8"><title>Phase 0 dump</title><pre style="white-space:pre-wrap;word-break:break-word;font:13px/1.5 ui-monospace,Menlo,monospace;padding:24px;max-width:960px;margin:0 auto;">${escaped}</pre>`,
-    { headers: { "content-type": "text/html; charset=utf-8" } }
-  );
+  return dumpWithLinks(sections.join("\n\n"), links);
 }
