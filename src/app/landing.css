@@ -334,29 +334,26 @@ body:has(.landing) {
   align-items: stretch;
 }
 
+/* Below 900px the poster loses its running frame and its own inset together.
+   The sentence is a frame or it is nothing: there is no room to set it up the
+   sides without stealing the column's width, and the top and bottom runs left
+   on their own read as two loose labels stranded outside a rectangle rather
+   than as its border — so all four go, and the 1px rule becomes the frame.
+   (The hero eyebrow already carries a line of tracked micro-type here.)
+   With nothing left to hold, .frame's padding goes too. It was the middle of
+   three nested insets — page gutter, frame, inner — which had squeezed the
+   hero column to ~255px on a 393px screen while every section below it ran to
+   ~353px, and that contrast is what read as tight. Now the border lines up
+   with the nav mark and the width goes back to the type. */
 @media (max-width: 900px) {
-  .frame__run--left, .frame__run--right { display: none; }
-  .frame__inner { grid-template-columns: minmax(0, 1fr); }
-
-  /* One repetition of the sentence is wider than the whole frame on a phone,
-     so the run bled past the border on both sides and broke mid-word at the
-     right edge. Below 900px the frame has already dropped its side runs:
-     show a single whole repetition instead, aligned to the frame's own edges,
-     centred, and scaled down until it fits the width. */
-  .frame__run--top,
-  .frame__run--bottom {
-    inset-inline: clamp(1.5rem, 2.4vw, 2.5rem);
-    display: flex;
-    justify-content: center;
-    font-size: min(0.625rem, calc(3.4vw - 3.1px));
-    letter-spacing: 0.16em;
+  .frame__run { display: none; }
+  .frame { padding: 0; }
+  .hero { padding-block: clamp(1.25rem, 4vw, 2rem) clamp(2.5rem, 7vw, 4rem); }
+  .frame__inner {
+    grid-template-columns: minmax(0, 1fr);
+    padding: clamp(1.75rem, 6vw, 2.5rem) clamp(1.25rem, 5vw, 1.75rem);
+    gap: clamp(1.75rem, 5vw, 2.5rem);
   }
-  .frame__run--top i ~ i,
-  .frame__run--bottom i ~ i { display: none; }
-  .frame__run--top i,
-  .frame__run--bottom i { padding-right: 0; }
-  .frame__run--top i span,
-  .frame__run--bottom i span { display: none; }
 }
 
 .hero__eyebrow { color: var(--teal); margin-bottom: clamp(1rem, 1.8vw, 1.5rem); }
@@ -1020,7 +1017,9 @@ body:has(.landing) {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.875rem var(--gutter);
+  /* The bottom pad carries the safe-area inset so the bar's own content
+     clears an iPhone's home indicator rather than sitting under it. */
+  padding: 0.875rem var(--gutter) calc(0.875rem + env(safe-area-inset-bottom, 0px));
   background: var(--orange);
   color: var(--ink);
   border-top: 1px solid var(--ink);
@@ -1040,7 +1039,9 @@ body:has(.landing) {
 
 @media (max-width: 800px) {
   .sticky { display: flex; }
-  .landing { padding-bottom: 4.5rem; }
+  /* The bar measures ~75px, so 4.5rem of reserve left the last few pixels of
+     the footer under it. Reserve the bar plus a little air, plus the inset. */
+  .landing { padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { .sticky { transition: none; } }
 
