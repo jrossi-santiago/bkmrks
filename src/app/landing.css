@@ -320,6 +320,26 @@ body:has(.landing) {
 @media (max-width: 900px) {
   .frame__run--left, .frame__run--right { display: none; }
   .frame__inner { grid-template-columns: minmax(0, 1fr); }
+
+  /* One repetition of the sentence is wider than the whole frame on a phone,
+     so the run bled past the border on both sides and broke mid-word at the
+     right edge. Below 900px the frame has already dropped its side runs:
+     show a single whole repetition instead, aligned to the frame's own edges,
+     centred, and scaled down until it fits the width. */
+  .frame__run--top,
+  .frame__run--bottom {
+    inset-inline: clamp(1.5rem, 2.4vw, 2.5rem);
+    display: flex;
+    justify-content: center;
+    font-size: min(0.625rem, calc(3.4vw - 3.1px));
+    letter-spacing: 0.16em;
+  }
+  .frame__run--top i ~ i,
+  .frame__run--bottom i ~ i { display: none; }
+  .frame__run--top i,
+  .frame__run--bottom i { padding-right: 0; }
+  .frame__run--top i span,
+  .frame__run--bottom i span { display: none; }
 }
 
 .hero__eyebrow { color: var(--teal); margin-bottom: clamp(1rem, 1.8vw, 1.5rem); }
