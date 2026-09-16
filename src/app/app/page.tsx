@@ -295,29 +295,19 @@ export default async function AppPage({
               </a>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-neutral-400">Order:</span>
-            {(["desc", "asc"] as const).map((option) => (
-              <a
-                key={option}
-                href={buildAppHref({
-                  tags: tagsParam,
-                  untagged: untaggedParam,
-                  public: publicParam,
-                  handle: handleParam,
-                  sort: sortParam,
-                  dir: option === "asc" ? "asc" : undefined,
-                })}
-                className={
-                  dir === option
-                    ? "font-medium text-neutral-900 underline dark:text-neutral-100"
-                    : "text-neutral-500 hover:underline"
-                }
-              >
-                {option === "desc" ? "Newest first" : "Oldest first"}
-              </a>
-            ))}
-          </div>
+          <a
+            href={buildAppHref({
+              tags: tagsParam,
+              untagged: untaggedParam,
+              public: publicParam,
+              handle: handleParam,
+              sort: sortParam,
+              dir: dir === "asc" ? undefined : "asc",
+            })}
+            className="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+          >
+            {dir === "asc" ? "Show newest first" : "Show oldest first"}
+          </a>
         </div>
       )}
 
