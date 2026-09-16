@@ -6,6 +6,23 @@ import { getValidAccessToken } from "./db/users";
 
 export type RevalidateResult = { checked: number; deleted: number; updated: number; apiCalls: number };
 
+// Postgres's jsonb columns store object keys in their own canonical order,
+// not the order they were inserted in — so a plain JSON.stringify of a
+// freshly-fetched API object never matches JSON.stringify of the same data
+// read back from `media`/`metrics` below, even when nothing actually
+// changed. Sorting keys recursively before comparing makes the check care
+// about content, not storage order.
+export function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const keys = Object.keys(value as Record<string, unknown>).sort();
+    return `{${keys
+      .map((k) => `${JSON.stringify(k)}:${stableStringify((value as Record<string, unknown>)[k])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
 // Bounds each run's cost and duration regardless of how many bookmarks
 // exist across all users — at 100 ids/request (X's confirmed max) this is
 // at most 5 batch lookups per cron invocation. Ordering candidates by
@@ -92,8 +109,8 @@ export async function runRevalidation(): Promise<RevalidateResult> {
 
           const changed =
             tweet.text !== existing.text ||
-            JSON.stringify(newMedia) !== JSON.stringify(existing.media) ||
-            JSON.stringify(newMetrics) !== JSON.stringify(existing.metrics);
+            stableStringify(newMedia) !== stableStringify(existing.media) ||
+            stableStringify(newMetrics) !== stableStringify(existing.metrics);
 
           await db
             .update(bookmarks)
