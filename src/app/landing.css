@@ -3,7 +3,9 @@
    Aesthetic system: docs/ref-01-frames.png (frame + poster chrome)
                      docs/ref-02-paintings.png (texture only, duotone)
                      docs/ref-03-color-boards.png (type, colour hits, grid)
-   Copy: docs/LANDING-FULL.md. Nothing on this page is written here.
+   Copy: rewritten in plain language for readers new to the product. It no
+         longer tracks docs/LANDING-FULL.md word for word — that doc is the
+         older, longer draft and needs re-syncing before it is used again.
    ========================================================================== */
 
 .landing {
@@ -29,17 +31,16 @@
   --micro: 0.6875rem;                              /* 11px tracked caps */
   --small: 0.8125rem;
   --body: clamp(1.0625rem, 0.98rem + 0.36vw, 1.1875rem);
-  --body-lg: clamp(1.1875rem, 1.06rem + 0.6vw, 1.4375rem);
-  --h4: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
-  --h3: clamp(1.5rem, 1.25rem + 1.2vw, 2.125rem);
-  --h2: clamp(2.125rem, 1.5rem + 2.9vw, 4rem);
-  --h1: clamp(2.75rem, 1.5rem + 5.9vw, 6.5rem);
-  --display: clamp(1.75rem, 1.1rem + 3.1vw, 3.5rem);
+  --body-lg: clamp(1.125rem, 1.03rem + 0.45vw, 1.3125rem);
+  --h4: clamp(1.125rem, 1.02rem + 0.5vw, 1.375rem);
+  --h3: clamp(1.375rem, 1.15rem + 0.9vw, 1.875rem);
+  --h2: clamp(1.75rem, 1.15rem + 2.1vw, 3rem);
+  --display: clamp(1.5rem, 1.05rem + 1.9vw, 2.5rem);
 
   /* --- measure ------------------------------------------------------- */
   --gutter: clamp(1.25rem, 5vw, 5.5rem);          /* heavy black margin */
   --max: 76rem;
-  --band-y: clamp(5.25rem, 10vw, 10.5rem);
+  --band-y: clamp(3.5rem, 6.5vw, 6.5rem);
 
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 
@@ -78,6 +79,19 @@ body:has(.landing) {
 
 :where(.landing) em { font-style: italic; }
 
+/* Every centred line is balanced, so none of them ends on a one-word orphan. */
+.lede,
+.closer,
+.pull,
+.promise,
+.aside-note,
+.after__body,
+.compare-note,
+.final__support,
+.final__risk,
+.prose--mid p,
+.inter p { text-wrap: balance; }
+
 :where(.landing) a { color: inherit; }
 
 .landing ::selection { background: var(--orange); color: var(--ink); }
@@ -111,11 +125,13 @@ body:has(.landing) {
 .label {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.9rem;
   color: var(--teal);
-  margin-bottom: clamp(1.75rem, 3.4vw, 3rem);
+  margin-bottom: clamp(1.25rem, 2.4vw, 2rem);
 }
 .label__n { font-variant-numeric: tabular-nums; opacity: 0.75; }
+.label::before,
 .label::after {
   content: "";
   flex: 1;
@@ -125,9 +141,10 @@ body:has(.landing) {
 }
 .band--orange .label,
 .band--paper .label { color: rgba(11, 11, 11, 0.62); }
-.band--orange .label::after,
-.band--paper .label::after { background: var(--rule-ink); }
+.band--orange .label::before, .band--orange .label::after,
+.band--paper .label::before, .band--paper .label::after { background: var(--rule-ink); }
 .band--blue .label { color: rgba(244, 239, 230, 0.78); }
+.band--blue .label::before,
 .band--blue .label::after { background: var(--rule-paper-on-colour); }
 
 .lede {
@@ -478,13 +495,17 @@ body:has(.landing) {
    Problem — the unbroken column. Dense, undifferentiated, no controls.
    -------------------------------------------------------------------------- */
 
-.sec__head { max-width: 32ch; }
-.sec__head h2 { font-size: var(--h2); }
-.sec__head .lede { margin-top: clamp(1rem, 2vw, 1.5rem); }
+/* Every section heading is centred; the body blocks beneath them are centred
+   as blocks but keep their text left-aligned, so only the headings and the
+   short display lines sit on the page's centre axis. */
+.sec__head { max-width: 48ch; margin-inline: auto; text-align: center; }
+.sec__head h2 { font-size: var(--h2); max-width: 26ch; margin-inline: auto; }
+.sec__head .lede { margin-top: clamp(0.875rem, 1.6vw, 1.25rem); margin-inline: auto; }
 
 .column {
-  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
   max-width: 60ch;
+  margin-inline: auto;
   border-top: 1px solid var(--rule);
 }
 .column__beat { padding-block: clamp(1.75rem, 3vw, 2.5rem); border-bottom: 1px solid var(--rule); }
@@ -492,45 +513,49 @@ body:has(.landing) {
 .column__beat p { color: var(--paper-dim); }
 
 .closer {
-  margin-top: clamp(2.5rem, 5vw, 4rem);
+  margin-top: clamp(2rem, 4vw, 3.25rem);
   font-size: var(--display);
   line-height: 1.08;
   letter-spacing: -0.022em;
-  max-width: 22ch;
+  max-width: 30ch;
+  margin-inline: auto;
+  text-align: center;
 }
 
 .aside-note {
-  margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  margin-top: clamp(1.5rem, 2.6vw, 2rem);
   font-family: var(--mono);
   font-size: var(--small);
   line-height: 1.8;
   color: rgba(244, 239, 230, 0.5);
   max-width: 52ch;
+  margin-inline: auto;
+  text-align: center;
 }
 
 /* --------------------------------------------------------------------------
    Stakes — type only, one large pull quote
    -------------------------------------------------------------------------- */
 
-.stakes__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: clamp(2rem, 6vw, 6rem);
-  align-items: start;
+.prose--mid {
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+  max-width: 54ch;
+  margin-inline: auto;
+  text-align: center;
 }
-@media (max-width: 860px) { .stakes__grid { grid-template-columns: minmax(0, 1fr); } }
-
-.stakes__grid .prose p { color: var(--paper-dim); }
+.prose--mid p { color: var(--paper-dim); }
 
 .pull {
-  margin-top: clamp(3rem, 6vw, 5.5rem);
+  margin-top: clamp(2.25rem, 4.5vw, 4rem);
   font-size: var(--display);
   line-height: 1.1;
   letter-spacing: -0.022em;
   color: var(--orange);
-  max-width: 26ch;
+  max-width: 28ch;
+  margin-inline: auto;
+  text-align: center;
   border-top: 1px solid var(--rule);
-  padding-top: clamp(1.5rem, 3vw, 2.5rem);
+  padding-top: clamp(1.25rem, 2.4vw, 2rem);
 }
 
 /* --------------------------------------------------------------------------
@@ -553,25 +578,24 @@ body:has(.landing) {
    After — colour hit #1 (orange, ink type) — ref-03 left panel
    -------------------------------------------------------------------------- */
 
-.after__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  gap: clamp(2rem, 6vw, 5.5rem);
-  align-items: start;
+.after__body {
+  color: rgba(11, 11, 11, 0.74);
+  margin-top: clamp(1.5rem, 2.6vw, 2rem);
+  max-width: 50ch;
+  margin-inline: auto;
+  text-align: center;
 }
-@media (max-width: 860px) { .after__grid { grid-template-columns: minmax(0, 1fr); } }
-
-.after__grid h2 { font-size: var(--h2); max-width: 11ch; }
-.after__body { color: rgba(11, 11, 11, 0.74); margin-top: 1.1em; max-width: 46ch; }
 
 .promise {
-  margin-top: clamp(2.5rem, 5vw, 4rem);
+  margin-top: clamp(2rem, 4vw, 3.25rem);
   border-top: 1px solid var(--rule-ink-strong);
-  padding-top: clamp(1.5rem, 3vw, 2.25rem);
+  padding-top: clamp(1.25rem, 2.4vw, 2rem);
   font-size: var(--display);
   line-height: 1.12;
   letter-spacing: -0.022em;
-  max-width: 24ch;
+  max-width: 26ch;
+  margin-inline: auto;
+  text-align: center;
 }
 .promise em { display: block; }
 
@@ -580,7 +604,7 @@ body:has(.landing) {
    -------------------------------------------------------------------------- */
 
 .board {
-  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
@@ -593,7 +617,7 @@ body:has(.landing) {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  min-height: 15rem;
+  min-height: 12rem;
 }
 .board__n { color: var(--orange); font-variant-numeric: tabular-nums; }
 .board__cell h3 { font-size: var(--h4); letter-spacing: -0.012em; line-height: 1.12; }
@@ -608,7 +632,7 @@ body:has(.landing) {
    -------------------------------------------------------------------------- */
 
 .steps {
-  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   border-top: 1px solid var(--rule-paper-on-colour);
@@ -638,7 +662,8 @@ body:has(.landing) {
 }
 
 .reassure {
-  margin-top: clamp(2.5rem, 4vw, 3.5rem);
+  margin-top: clamp(2rem, 3.4vw, 3rem);
+  margin-inline: auto;
   border: 1px solid var(--rule-paper-on-colour);
   padding: clamp(1.5rem, 2.6vw, 2rem);
   font-family: var(--mono);
@@ -652,9 +677,10 @@ body:has(.landing) {
    -------------------------------------------------------------------------- */
 
 .ui {
-  margin-top: clamp(2.5rem, 5vw, 4rem);
+  margin-top: clamp(2rem, 4vw, 3.25rem);
   border: 1px solid var(--rule-strong);
-  max-width: 48rem;
+  max-width: 44rem;
+  margin-inline: auto;
   background: var(--ink);
 }
 .ui__bar {
@@ -699,7 +725,7 @@ body:has(.landing) {
 .ui__chip--on { border-color: var(--teal); color: var(--teal); }
 
 .moments {
-  margin-top: clamp(2.5rem, 4.5vw, 4rem);
+  margin-top: clamp(2rem, 3.6vw, 3.25rem);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
@@ -724,7 +750,7 @@ body:has(.landing) {
    -------------------------------------------------------------------------- */
 
 .cases {
-  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(1.5rem, 3vw, 3rem);
@@ -741,11 +767,11 @@ body:has(.landing) {
    Comparison — typographic table on paper. The lost row is styled identically.
    -------------------------------------------------------------------------- */
 
-.compare-wrap { margin-top: clamp(2.5rem, 5vw, 4rem); overflow-x: auto; }
+.compare-wrap { margin-top: clamp(2rem, 4vw, 3.25rem); overflow-x: auto; }
 
 .compare {
   width: 100%;
-  min-width: 46rem;
+  min-width: 40rem;
   border-collapse: collapse;
   text-align: left;
   font-size: 1rem;
@@ -781,11 +807,13 @@ body:has(.landing) {
 .compare tbody tr td:last-child { box-shadow: inset 1px 0 0 var(--rule-ink); }
 
 .compare-note {
-  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  margin-top: clamp(1.25rem, 2.4vw, 1.875rem);
   border-top: 1px solid var(--rule-ink-strong);
-  padding-top: clamp(1.25rem, 2vw, 1.75rem);
+  padding-top: clamp(1.125rem, 1.8vw, 1.5rem);
   font-size: var(--body);
   max-width: 54ch;
+  margin-inline: auto;
+  text-align: center;
   color: var(--ink);
 }
 
@@ -794,7 +822,7 @@ body:has(.landing) {
    -------------------------------------------------------------------------- */
 
 .fit {
-  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(2rem, 5vw, 4.5rem);
@@ -830,7 +858,7 @@ body:has(.landing) {
    -------------------------------------------------------------------------- */
 
 .constraints {
-  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  margin-top: clamp(2rem, 4vw, 3.5rem);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
@@ -860,7 +888,7 @@ body:has(.landing) {
    FAQ — paper band, serif questions
    -------------------------------------------------------------------------- */
 
-.faq { margin-top: clamp(2.5rem, 5vw, 4rem); max-width: 60rem; border-top: 1px solid var(--rule-ink); }
+.faq { margin-top: clamp(2rem, 4vw, 3.25rem); max-width: 56rem; margin-inline: auto; border-top: 1px solid var(--rule-ink); }
 .faq details { border-bottom: 1px solid var(--rule-ink); }
 .faq summary {
   list-style: none;
@@ -896,7 +924,7 @@ body:has(.landing) {
    Final CTA — last colour hit, same button as the hero (inverted on orange)
    -------------------------------------------------------------------------- */
 
-.final { text-align: left; }
+.final { text-align: center; }
 .final__run {
   position: absolute;
   top: clamp(0.9rem, 2vw, 1.6rem);
@@ -913,15 +941,34 @@ body:has(.landing) {
   pointer-events: none;
 }
 .final__run i { font-style: normal; padding-right: 1.2em; }
-.final h2 { font-size: var(--h2); max-width: 15ch; }
-.final__support { margin-top: clamp(1.25rem, 2.4vw, 2rem); font-size: var(--body-lg); line-height: 1.38; max-width: 40ch; }
-.final__act { margin-top: clamp(2rem, 3.6vw, 3rem); }
+
+@media (max-width: 900px) {
+  .final__run {
+    display: flex;
+    justify-content: center;
+    font-size: min(0.625rem, calc(3.4vw - 3.1px));
+    letter-spacing: 0.16em;
+  }
+  .final__run i ~ i { display: none; }
+  .final__run i { padding-right: 0; }
+  .final__run i span { display: none; }
+}
+.final h2 { font-size: var(--h2); max-width: 18ch; margin-inline: auto; }
+.final__support {
+  margin-top: clamp(1rem, 2vw, 1.5rem);
+  font-size: var(--body-lg);
+  line-height: 1.38;
+  max-width: 42ch;
+  margin-inline: auto;
+}
+.final__act { margin-top: clamp(1.5rem, 2.8vw, 2.25rem); }
 .final__risk {
-  margin-top: 1.75rem;
+  margin-top: 1.5rem;
   font-family: var(--mono);
   font-size: var(--small);
   line-height: 1.8;
   max-width: 56ch;
+  margin-inline: auto;
   color: rgba(11, 11, 11, 0.78);
 }
 .final__risk b { color: var(--ink); font-weight: 500; }
@@ -998,14 +1045,13 @@ body:has(.landing) {
 @media (prefers-reduced-motion: reduce) { .sticky { transition: none; } }
 
 /* --------------------------------------------------------------------------
-   Mobile copy switches, per LANDING-FULL short variants
+   Mobile copy switches
    -------------------------------------------------------------------------- */
 
-.only-narrow { display: none; }
-
+/* The long/short copy pairs are gone — one plain version now runs at every
+   width — so only .only-wide (the hero's "see how it works" link) is left. */
 @media (max-width: 700px) {
   .only-wide { display: none; }
-  .only-narrow { display: revert; }
   .hero__perm, .hero__mark { display: none; }
 }
 

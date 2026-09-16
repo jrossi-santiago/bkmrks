@@ -130,10 +130,10 @@ export default async function Home({
                 <div>
                   {loginError && (
                     <div className="notice" role="status">
-                      <strong>Sign-in didn’t complete.</strong>
+                      <strong>Sign-in didn’t finish.</strong>
                       <p>
-                        Nothing was connected and nothing changed on your X account. Try
-                        again, or come back in a minute if X is having a moment.
+                        Nothing was connected. Nothing on your X account changed. Try again
+                        in a minute.
                       </p>
                     </div>
                   )}
@@ -145,8 +145,8 @@ export default async function Home({
                   </h1>
 
                   <p className="hero__sub">
-                    Every post you’ve saved on X, in one library you can search by what it
-                    was about — not what it said.
+                    Every post you saved on X, in one place. Find any of them by what it
+                    was about.
                   </p>
 
                   <div className="hero__act">
@@ -160,18 +160,17 @@ export default async function Home({
 
                   <div className="hero__fine">
                     <p className="hero__trust">
-                      <b>Read-only</b> — bkmrks can’t post, like, follow, or DM from your
-                      account. <b>Paid, no free tier.</b>
+                      <b>It can only read.</b> It can’t post, like, or follow for you.{" "}
+                      <b>Paid. No free version.</b>
                     </p>
 
                     <p className="hero__perm">
-                      No developer account, no API key, no X Premium. X will ask you to
-                      allow read access to your bookmarks and profile. That’s all bkmrks
-                      asks for, and all it can use.
+                      There is nothing to set up. X will ask you to allow read access to
+                      your bookmarks. That is all we ask for, and all we can use.
                     </p>
                   </div>
 
-                  <p className="micro hero__mark">bkmrks · Read-only · Paid, no free tier</p>
+                  <p className="micro hero__mark">bkmrks · Read only · No free version</p>
                 </div>
 
                 {/* ref-02, texture only: a duotone film. Never a portrait. */}
@@ -188,52 +187,42 @@ export default async function Home({
               <span className="label__n">01</span>
             </p>
             <div className="sec__head">
-              <h2 id="problem-h">
-                <span className="only-wide">You saved it. That’s the last time you saw it.</span>
-                <span className="only-narrow">You saved it. Then it was gone.</span>
-              </h2>
-              <p className="lede">
-                Not because you’re disorganized. Because there is no way back in.
-              </p>
+              <h2 id="problem-h">You saved it. Then you never saw it again.</h2>
+              <p className="lede">It is not you. There is just no way back in.</p>
             </div>
 
             {/* The unbroken column: dense, undifferentiated, no controls. */}
             <div className="column">
               <div className="column__beat">
-                <h3>Saving costs nothing.</h3>
+                <h3>Saving is easy.</h3>
                 <p>
-                  One tap, no decision. A pricing thread. A teardown worth stealing from.
-                  The exact argument you’ll want in a meeting later. Monday you save four.
-                  By Friday, twenty-five.
-                </p>
-              </div>
-              <div className="column__beat only-wide">
-                <h3>The pile grows faster than anyone reads it.</h3>
-                <p>
-                  It’s one column, newest first. No tags. No groups. No way to say “show me
-                  the ones about hiring.” X doesn’t even record <em>when</em> you bookmarked
-                  something — only the order it hands things back — so there’s no sorting
-                  your way out of it either.
+                  One tap. No thinking. You save four posts on Monday. By Friday you have
+                  twenty-five.
                 </p>
               </div>
               <div className="column__beat">
-                <h3>Then you need one, and it’s gone.</h3>
+                <h3>The pile grows.</h3>
                 <p>
-                  You remember what the post <em>argued</em> — not its wording, not who
-                  wrote it, not where it sits in a 3,000-item scroll. So you scroll for
-                  ninety seconds, give up, and reconstruct the point from memory, worse than
-                  the original. The post is still in there. You just can’t reach it.
+                  It is one long list, newest first. No tags. No groups. No way to ask for
+                  the ones about hiring.
+                </p>
+              </div>
+              <div className="column__beat">
+                <h3>Then you need one.</h3>
+                <p>
+                  You remember the idea, not the words. So you scroll for a minute, give
+                  up, and guess. The post is still in there. You just cannot reach it.
                 </p>
               </div>
             </div>
 
             <p className="aside-note">
-              You’ve tried to fix this before. A Notion page of pasted links that died in a
-              week. A browser folder. A DM to yourself.
+              You have tried to fix this. A page of pasted links. A browser folder. A note
+              to yourself.
             </p>
 
             <p className="closer">
-              Native bookmarks aren’t a library. They’re a list you never reopen.
+              Saved posts are not a library. They are a list you never open again.
             </p>
           </div>
         </section>
@@ -244,32 +233,20 @@ export default async function Home({
             <p className="micro label">
               <span className="label__n">02</span>
             </p>
-            <div className="stakes__grid">
-              <div className="sec__head">
-                <h2 id="stakes-h">The cost isn’t the ten minutes.</h2>
-                <p className="lede">It’s what the ten minutes teaches you.</p>
-              </div>
-              <div className="prose">
-                <p>You went looking. You didn’t find it. So next time you don’t bother looking.</p>
-                <p>
-                  That’s the real damage: you’ve stopped trusting your own library, which
-                  means you’ve stopped consulting it, which means every save you make from
-                  here gets filed into a drawer you already know you won’t open.
-                </p>
-                <p>
-                  You’re still doing the work of collecting. You’ve just stopped getting any
-                  of the benefit of having collected.
-                </p>
-                <p>
-                  The posts didn’t stop being worth keeping. The keeping stopped being worth
-                  anything.
-                </p>
-              </div>
+            <div className="sec__head">
+              <h2 id="stakes-h">The cost is not the ten minutes.</h2>
+              <p className="lede">It is what those ten minutes teach you.</p>
             </div>
 
-            <p className="pull">
-              Every save from here is filed into a drawer you already know you won’t open.
-            </p>
+            <div className="prose prose--mid">
+              <p>You went looking. You did not find it. So next time you do not look.</p>
+              <p>
+                That is the real loss. You still save things. You just stopped getting
+                anything back.
+              </p>
+            </div>
+
+            <p className="pull">Every save goes into a drawer you know you will not open.</p>
           </div>
         </section>
 
@@ -277,8 +254,8 @@ export default async function Home({
         <aside className="inter">
           <div className="wrap">
             <p>
-              None of that is a discipline problem. It’s a <em>retrieval</em> problem — and
-              retrieval is fixable.
+              This is not a willpower problem. It is a <em>finding</em> problem. That one
+              can be fixed.
             </p>
           </div>
         </aside>
@@ -289,25 +266,22 @@ export default async function Home({
             <p className="micro label">
               <span className="label__n">03</span>
             </p>
-            <div className="after__grid">
-              <div>
-                <h2 id="after-h">The pile stops being a pile.</h2>
-              </div>
-              <div>
-                <p className="lede">
-                  Same Tuesday. Someone asks you the thing. You type what the post was about
-                  — “hiring a first salesperson too early” — and the thread is on screen.
-                </p>
-                <p className="after__body">
-                  You didn’t remember the author. You didn’t remember the phrasing. You
-                  didn’t need to. It was four months old. You’d have never scrolled to it.
-                </p>
-              </div>
+            <div className="sec__head">
+              <h2 id="after-h">The pile stops being a pile.</h2>
+              <p className="lede">
+                Someone asks you the thing. You type what the post was about. It is on
+                screen.
+              </p>
             </div>
 
+            <p className="after__body">
+              You did not remember who wrote it. You did not remember the words. You did
+              not need to. It was four months old.
+            </p>
+
             <p className="promise">
-              Every post you have bookmarked on X, in one place you can search by meaning
-              and <em>actually get back out.</em>
+              Every post you saved on X, in one place you can search
+              <em>and actually get back out.</em>
             </p>
           </div>
         </section>
@@ -319,58 +293,54 @@ export default async function Home({
               <span className="label__n">04</span>
             </p>
             <div className="sec__head">
-              <h2 id="outcomes-h">What you walk away with.</h2>
-              <p className="lede">Outcomes, not modules.</p>
+              <h2 id="outcomes-h">What you get.</h2>
+              <p className="lede">Six things you can do on day one.</p>
             </div>
 
             <div className="board">
               <article className="board__cell">
                 <p className="micro board__n">01</p>
-                <h3>Everything you already saved, in one place</h3>
+                <h3>Everything you saved, in one place</h3>
                 <p>
-                  Not a window onto X’s list. Your full bookmark history, copied over on
-                  first sign-in, sitting in a library that’s yours to search.
+                  Your whole history copies over the first time you sign in. Then it is
+                  yours to search.
                 </p>
               </article>
               <article className="board__cell">
                 <p className="micro board__n">02</p>
-                <h3>Any one post, from a vague memory, in seconds</h3>
-                <p>
-                  You remember the argument, not the wording. That’s now enough to find it.
-                </p>
+                <h3>Find a post from a hazy memory</h3>
+                <p>You remember the idea, not the words. That is enough now.</p>
               </article>
               <article className="board__cell">
                 <p className="micro board__n">03</p>
-                <h3>This week’s saves, handled in one sitting</h3>
+                <h3>This week’s saves, done in one sitting</h3>
                 <p>
-                  They’re at the top by default, and the ones you haven’t filed yet are one
-                  click away behind an “Untagged” filter. Triage gets an ending.
+                  New ones sit at the top. The ones you have not sorted yet are one click
+                  away.
                 </p>
               </article>
               <article className="board__cell">
                 <p className="micro board__n">04</p>
-                <h3>The bottom of the pile, for the first time</h3>
+                <h3>The bottom of the pile, at last</h3>
                 <p>
-                  One toggle reads your library oldest-first, where the saves X buried
-                  hardest have been sitting untouched since the day you made them.
+                  Flip the order and read the oldest first. Those have been buried since
+                  the day you saved them.
                 </p>
               </article>
               <article className="board__cell">
                 <p className="micro board__n">05</p>
                 <h3>A copy that outlives the post</h3>
                 <p>
-                  Your saves are copied, then re-checked against X daily. When a post gets
-                  deleted, your copy of its text stays readable instead of turning into a
-                  dead link.
+                  We check your saves against X every day. If a post is deleted, your copy
+                  still reads.
                 </p>
               </article>
               <article className="board__cell">
                 <p className="micro board__n">06</p>
-                <h3>A share link for any slice of it</h3>
+                <h3>A link you can hand to anyone</h3>
                 <p>
-                  Tag ten posts “pricing,” flip that one tag public, copy the link. Anyone
-                  can open it with no account, and they see exactly those ten posts —
-                  nothing else you own becomes visible, ever.
+                  Tag ten posts, make that one tag public, and send the link. Those ten
+                  show. Nothing else of yours does.
                 </p>
               </article>
             </div>
@@ -381,7 +351,7 @@ export default async function Home({
         <aside className="inter">
           <div className="wrap">
             <p>
-              Which is a large claim for a bookmark list. Here’s what’s actually{" "}
+              That is a big claim for a bookmark list. Here is what is{" "}
               <em>underneath</em> it.
             </p>
           </div>
@@ -394,10 +364,7 @@ export default async function Home({
               <span className="label__n">05</span>
             </p>
             <div className="sec__head">
-              <h2 id="how-h">
-                <span className="only-wide">Three steps, then it’s just there.</span>
-                <span className="only-narrow">Three steps.</span>
-              </h2>
+              <h2 id="how-h">Three steps.</h2>
             </div>
 
             <div className="steps">
@@ -405,36 +372,31 @@ export default async function Home({
                 <span className="step__n" aria-hidden="true">1</span>
                 <h3>Sign in with X</h3>
                 <p>
-                  No developer account, no API key, no X Premium. bkmrks reads your
-                  bookmarks through X’s official API using your own authorization.
+                  Nothing to set up. No extra account, no keys, no paid X plan. You sign in
+                  the same way you sign in anywhere.
                 </p>
               </article>
               <article className="step">
                 <span className="step__n" aria-hidden="true">2</span>
-                <h3>Your whole history copies over</h3>
+                <h3>Your history copies over</h3>
                 <p>
-                  Every post you’ve ever bookmarked gets pulled out of X’s list into a
-                  library of its own — text, author, images. A big pile takes a few minutes,
-                  and search keeps sharpening over the first day as indexing catches up.
-                  Nothing is asked of you while it runs. It finishes whether you watch it or
-                  not.
+                  Every post you ever saved moves into a place of its own. Text, author and
+                  pictures. A big pile takes a few minutes. You do not have to watch it.
                 </p>
               </article>
               <article className="step">
                 <span className="step__n" aria-hidden="true">3</span>
-                <h3>Describe what you’re looking for</h3>
+                <h3>Say what you are looking for</h3>
                 <p>
-                  Type what the post was about, not what it said. Narrow by who wrote it, or
-                  by a tag you typed on the card. They stack: everything from one person,
-                  tagged one way, about one idea, is a single view.
+                  Type what the post was about, not what it said. You can also pick a
+                  person or a tag. All three work together.
                 </p>
               </article>
             </div>
 
             <p className="reassure">
-              Read-only scopes, your own token, encrypted at rest. There is no code path in
-              bkmrks that can post, like, follow, reply, or DM — that’s architecture, not a
-              setting you have to trust.
+              It can only read. There is no code here that can post, like, follow, reply or
+              send a message as you. Your sign-in is stored encrypted, not in plain text.
             </p>
           </div>
         </section>
@@ -475,27 +437,24 @@ export default async function Home({
                 <span className="micro moment__n">01</span>
                 <h3>The search</h3>
                 <p>
-                  A description typed into the search box — not a quote, not a handle, not a
-                  keyword — and the thread it returns. The words typed and the words in the
-                  result barely overlap.
+                  You type what a post was about. The right one comes back. The words you
+                  typed and the words in the post barely match.
                 </p>
               </article>
               <article className="moment">
                 <span className="micro moment__n">02</span>
                 <h3>The tag</h3>
                 <p>
-                  One word typed onto a card, which immediately becomes a filter chip at the
-                  top of the library. That was the entire filing system. There is no folder
-                  tree, no setup, no second screen.
+                  You type one word on a post. It turns into a button at the top that shows
+                  you that group. That is the whole filing system.
                 </p>
               </article>
               <article className="moment">
                 <span className="micro moment__n">03</span>
                 <h3>The public page</h3>
                 <p>
-                  A tag flipped public, its link copied, and the resulting page open in a
-                  browser with nobody signed in. It shows exactly one tag’s posts, and
-                  nothing else about the account is visible or reachable from it.
+                  You make one tag public and copy the link. Anyone can open it. They see
+                  those posts and nothing else about you.
                 </p>
               </article>
             </div>
@@ -509,50 +468,39 @@ export default async function Home({
               <span className="label__n">07</span>
             </p>
             <div className="sec__head">
-              <h2 id="usecases-h">Three ways this gets used.</h2>
+              <h2 id="usecases-h">Three ways people use it.</h2>
             </div>
 
             <div className="cases">
               <article className="case">
-                <h3>The pile you’ve stopped opening</h3>
+                <h3>The pile you stopped opening</h3>
+                <p>You saved a thread about pricing eight months ago.</p>
                 <p>
-                  You saved a thread on pricing eight months ago and you know it’s in there.
+                  <b>You need</b> it today, and you only remember the idea.
                 </p>
                 <p>
-                  <b>You need</b> it now, and you remember the argument, not the wording.
-                </p>
-                <p>
-                  <b>Now you</b> describe it and it comes back — with everything else you
-                  ever saved on the subject sitting next to it.
+                  <b>Now you</b> describe it and it comes back, with everything else you
+                  saved on the subject.
                 </p>
               </article>
               <article className="case">
-                <h3>The list you want to hand someone</h3>
+                <h3>The list you want to share</h3>
+                <p>You have saved thirty good posts on one subject.</p>
                 <p>
-                  You’ve bookmarked thirty genuinely good posts on one subject over two
-                  years.
+                  <b>You need</b> to hand someone the good ones.
                 </p>
                 <p>
-                  <b>You need</b> to give someone the good ones without re-collecting them
-                  in a DM or spending a post on it.
-                </p>
-                <p>
-                  <b>Now you</b> tag them, flip that one tag public, and send a link.
-                  Nothing else of yours becomes visible.
+                  <b>Now you</b> tag them, make that tag public, and send one link.
                 </p>
               </article>
               <article className="case">
-                <h3>The body of work by one person</h3>
+                <h3>One person’s whole run</h3>
+                <p>You have saved one person’s posts for years.</p>
                 <p>
-                  You’ve been saving one person’s posts for years without ever grouping
-                  them.
+                  <b>You need</b> to read them all at once.
                 </p>
                 <p>
-                  <b>You need</b> to read the whole run at once.
-                </p>
-                <p>
-                  <b>Now you</b> filter to their handle and the set is in front of you — and
-                  you can flip it oldest-first and read forward.
+                  <b>Now you</b> pick their name, flip to oldest first, and read forward.
                 </p>
               </article>
             </div>
@@ -566,13 +514,13 @@ export default async function Home({
               <span className="label__n">08</span>
             </p>
             <div className="sec__head">
-              <h2 id="compare-h">Against what you’re doing now.</h2>
+              <h2 id="compare-h">Next to what you do now.</h2>
             </div>
 
             <div className="compare-wrap">
               <table className="compare">
                 <caption className="sr-only">
-                  How native X bookmarks, a notes-app dump of links, and bkmrks each handle
+                  How saved posts on X, a notes app full of links, and bkmrks each handle
                   four jobs.
                 </caption>
                 <thead>
@@ -580,8 +528,8 @@ export default async function Home({
                     <th scope="col">
                       <span className="sr-only">The job</span>
                     </th>
-                    <th scope="col">Native X bookmarks</th>
-                    <th scope="col">A notes-app dump of links</th>
+                    <th scope="col">Saved posts on X</th>
+                    <th scope="col">A notes app</th>
                     <th scope="col">bkmrks</th>
                   </tr>
                 </thead>
@@ -589,46 +537,34 @@ export default async function Home({
                   <tr>
                     <th scope="row">Find an old save</th>
                     <td>Scroll one list, newest first, until you spot it</td>
-                    <td>
-                      Search only the words you happened to paste; the post’s text was never
-                      captured
-                    </td>
-                    <td>Describe what it was about and it’s on screen</td>
+                    <td>You can only search the words you pasted</td>
+                    <td>Say what it was about and it is on screen</td>
                   </tr>
                   <tr>
                     <th scope="row">Review this week</th>
-                    <td>No idea which are new to you and which you’ve already seen</td>
-                    <td>
-                      Whatever you remembered to paste, if you kept it up — you didn’t
-                    </td>
-                    <td>
-                      Newest at the top, unfiled ones behind one filter, so triage ends
-                    </td>
+                    <td>No way to tell new from old</td>
+                    <td>Only what you remembered to paste</td>
+                    <td>Newest on top, unsorted ones one click away</td>
                   </tr>
                   <tr>
-                    <th scope="row">Leave with your data</th>
-                    <td>No export. Your saves live and die inside X’s list</td>
-                    <td>It’s your file, so this one you genuinely win</td>
-                    <td>
-                      No export yet. Your copy survives a deleted post, but it doesn’t leave
-                      with you
-                    </td>
+                    <th scope="row">Take it with you</th>
+                    <td>No way out. Your saves live inside X</td>
+                    <td>It is your file, so you win this one</td>
+                    <td>Not yet. Your copy lasts, but it cannot leave</td>
                   </tr>
                   <tr>
                     <th scope="row">Setup</th>
-                    <td>None — it’s already there, which is the whole trap</td>
-                    <td>
-                      Manual forever. Every save is a copy-paste you have to remember to do
-                    </td>
-                    <td>Sign in once; your whole history copies over on its own</td>
+                    <td>None, which is the whole trap</td>
+                    <td>Every save is a copy and paste you must remember</td>
+                    <td>Sign in once. Your history copies itself</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             <p className="compare-note">
-              The third row isn’t a win. Export doesn’t exist yet, and a table that hid that
-              wouldn’t be worth reading.
+              Row three is not a win. You cannot take your library out yet. Hiding that
+              would not be honest.
             </p>
           </div>
         </section>
@@ -647,42 +583,21 @@ export default async function Home({
               <div className="fit__col">
                 <h3>This is for you if</h3>
                 <ul>
-                  <li>
-                    You’ve been on X for years and save constantly — somewhere between 800
-                    and 5,000 deep.
-                  </li>
-                  <li>You’ve never once successfully searched that pile.</li>
-                  <li>
-                    You’ve already tried to fix it: a Notion page of pasted links that died
-                    in a week, a browser folder, a DM to yourself.
-                  </li>
-                  <li>
-                    You want a running public list of what you’re saving that isn’t your
-                    posting feed.
-                  </li>
+                  <li>You have been on X for years and save all the time.</li>
+                  <li>You have never once found an old save when you needed it.</li>
+                  <li>You already tried a page of links or a folder, and it died.</li>
+                  <li>You want a public list of what you save that is not your feed.</li>
                 </ul>
               </div>
               <div className="fit__col">
                 <h3>This is not for you if</h3>
                 <ul>
-                  <li>
-                    You save things from all over the web. X bookmarks are the only input —
-                    no extension, no share sheet, no URL saver.
-                  </li>
-                  <li>You want a free tool. There is no free tier, and no trial.</li>
-                  <li>
-                    You want to take notes on your saves. This stores what you saved; it
-                    doesn’t let you annotate it.
-                  </li>
-                  <li>
-                    You need to search exact strings, URLs, or quoted phrases. Search here
-                    works on meaning, not literal text.
-                  </li>
-                  <li>
-                    You want your data on your own machine. This is a hosted app with a
-                    hosted database.
-                  </li>
-                  <li>You’re a team. Everything is scoped to one person’s account.</li>
+                  <li>You save things from all over the web. X is the only source here.</li>
+                  <li>You want it free. There is no free version and no trial.</li>
+                  <li>You want to write notes on your saves. You cannot yet.</li>
+                  <li>You need to find exact words or a link. Search works on ideas.</li>
+                  <li>You want your data on your own computer. This lives online.</li>
+                  <li>You are a team. This is built for one person.</li>
                 </ul>
               </div>
             </div>
@@ -696,46 +611,43 @@ export default async function Home({
               <span className="label__n">10</span>
             </p>
             <div className="sec__head">
-              <h2 id="trust-h">What it can and can’t do to your account.</h2>
+              <h2 id="trust-h">What it can and cannot do.</h2>
             </div>
 
             <dl className="constraints">
               <div className="constraint">
                 <dt>It cannot act as you</dt>
                 <dd>
-                  No posting, liking, following, replying, or DMing is possible from this
-                  app. There is no code that does it, so it isn’t a setting you have to
-                  trust.
+                  It cannot post, like, follow, reply or send messages. There is no code
+                  here that does any of it.
                 </dd>
               </div>
               <div className="constraint">
-                <dt>Private until you say otherwise</dt>
+                <dt>Private until you say so</dt>
                 <dd>
-                  Nothing is public until you deliberately flip one specific tag public. The
-                  public pages are served by a separate data path that re-checks that flag
-                  on every query — verified by a test, not by assurance. A private tag and a
-                  tag that doesn’t exist are indistinguishable from the outside.
+                  Nothing is public until you make one tag public. From the outside, a
+                  private tag looks the same as a tag that does not exist.
                 </dd>
               </div>
               <div className="constraint">
-                <dt>Your tokens are encrypted at rest</dt>
+                <dt>Your sign-in is kept encrypted</dt>
                 <dd>
-                  And the sign-in cookie in your browser carries only <em>which</em> account
-                  you are, so it can’t be stolen and replayed against X.
+                  The cookie in your browser only says which account you are. It cannot be
+                  stolen and used on X.
                 </dd>
               </div>
               <div className="constraint">
-                <dt>Walking away leaves X untouched</dt>
+                <dt>Leaving changes nothing on X</dt>
                 <dd>
-                  Revoke access in your X settings whenever you want. Your actual X
-                  bookmarks are unaffected — nothing here ever modifies them.
+                  Turn off access in your X settings whenever you want. Your real bookmarks
+                  stay exactly as they are.
                 </dd>
               </div>
               <div className="constraint constraint--counter">
                 <dt>And the part that cuts the other way</dt>
                 <dd>
-                  This is a hosted app. A copy of your saved posts lives in its database,
-                  not on your computer. There’s no local mode, and no export yet.
+                  Your saved posts live on our server, not on your computer. There is no
+                  offline mode, and no way to take them out yet.
                 </dd>
               </div>
             </dl>
@@ -754,96 +666,80 @@ export default async function Home({
 
             <div className="faq">
               <details open>
-                <summary>Isn’t this just X bookmarks with extra steps?</summary>
+                <summary>Is this just X bookmarks with extra steps?</summary>
                 <p>
-                  X gives you one reverse-chronological list. No tags, no grouping, no
-                  meaning-based search, no sharing, no export — and no record of when you
-                  bookmarked anything, only the order it comes back in. There’s no
-                  discipline or folder scheme that fixes that, because the limit is in the
-                  tool. The only move available inside X is to save less. bkmrks adds all of
-                  it on top of the same bookmarks.
+                  X gives you one long list. No tags, no groups, no real search, no
+                  sharing. No folder trick fixes that, because the limit is in X. bkmrks
+                  adds all of it on top of the same saves.
                 </p>
               </details>
               <details>
-                <summary>Does my library leave my machine?</summary>
+                <summary>Where does my library live?</summary>
                 <p>
-                  Yes, and that should be in front of you before you sign in. bkmrks is a
-                  hosted app: a copy of your bookmarked posts lives in its cloud database,
-                  not on your computer. There is no local mode and no offline mode. The text
-                  of your saves is also sent to an outside service that indexes it by
-                  meaning — that’s what makes the search work. What that buys you is
-                  permanence and retrieval; what it costs you is trusting someone else’s
-                  server. Your X tokens are stored encrypted rather than in plain text, and
-                  the sign-in cookie in your browser carries only <em>which</em> account you
-                  are.
+                  On our server, not on your computer. There is no offline mode. To make
+                  search work, the text of your saves is also read by an outside service.
+                  You gain search and a copy that lasts. You give up keeping it all on your
+                  own machine.
                 </p>
               </details>
               <details>
-                <summary>Do I need X Premium, an API key, or a developer account?</summary>
+                <summary>Do I need anything special from X?</summary>
                 <p>
-                  No. You sign in with your normal X account and that’s the whole setup. The
-                  API access belongs to the product, not to you. Nothing here is gated on X
-                  Premium.
+                  No. You sign in with your normal X account and that is the whole setup.
+                  Nothing here needs a paid X plan.
                 </p>
               </details>
               <details>
-                <summary>Can it post, like, or follow from my account?</summary>
+                <summary>Can it post or follow from my account?</summary>
                 <p>
-                  No, and not as a matter of policy. The scopes requested are read scopes,
-                  and there is no code in bkmrks that posts, likes, follows, replies, or DMs
-                  — so there’s no setting to misconfigure and nothing to take on faith. It
-                  reads your own bookmarks and nothing else.
+                  No. It asks X for read access only, and there is no code here that posts,
+                  likes, follows, replies or sends messages. It reads your saves and
+                  nothing else.
                 </p>
               </details>
               <details>
-                <summary>Why does it cost money? It’s a bookmark viewer.</summary>
+                <summary>Why does it cost money?</summary>
                 <p>
-                  X’s API meters per request — reading your bookmarks costs real money on
-                  every sync, and so does indexing them so they can be searched by meaning.
-                  There’s no free tier because there’s no free read.
+                  X charges us every time we read your bookmarks. Making them searchable
+                  costs money too. There is no free version because there is no free read.
                 </p>
               </details>
               <details>
-                <summary>How long does the first sync take?</summary>
+                <summary>How long does the first copy take?</summary>
                 <p>
-                  A few minutes for a big pile, running in the background — you don’t have
-                  to sit and watch it. Search keeps getting sharper over the first day as
-                  indexing catches up, so a post you saved years ago may not be findable in
-                  the first ten minutes.
+                  A few minutes for a big pile, and it runs on its own. Search keeps
+                  getting sharper over the first day, so an old post may not show up in the
+                  first ten minutes.
                 </p>
               </details>
               <details>
-                <summary>Can I search for an exact phrase, a URL, or a quote?</summary>
+                <summary>Can I search for exact words or a link?</summary>
                 <p>
-                  Not reliably. Search here works on meaning, not literal text, so it’s
-                  built for “that thread about pricing a small product” and not for finding
-                  a specific string. If you’re after a particular person’s posts, the
-                  @handle filter is the better tool for that.
+                  Not reliably. Search works on ideas, not exact text. It is built for
+                  “that thread about pricing a small product.” To find one person’s posts,
+                  pick their name instead.
                 </p>
               </details>
               <details>
-                <summary>What happens when a post I saved gets deleted off X?</summary>
+                <summary>What if a post I saved gets deleted?</summary>
                 <p>
-                  Your copy stays. Every saved post is re-checked against X daily, so when
-                  the original disappears, what you saved doesn’t turn into a dead link —
-                  the text is still readable in your library.
+                  Your copy stays. We check your saves against X every day, so a deleted
+                  post does not turn into a dead link. The text is still there to read.
                 </p>
               </details>
               <details>
                 <summary>Does it work on my phone?</summary>
                 <p>
-                  It’s a web page, so yes — it works in a phone browser. There’s no iOS or
-                  Android app.
+                  Yes. It is a web page, so it works in a phone browser. There is no app to
+                  install.
                 </p>
               </details>
               <details>
                 <summary>What if I want out?</summary>
                 <p>
-                  Revoke the app’s access in your X settings whenever you like. Your actual X
-                  bookmarks are untouched — nothing here ever modifies them, so walking away
-                  costs you nothing on X’s side. Access to the library runs on an active
-                  membership. Worth knowing up front: there’s no export yet, so what you
-                  build here doesn’t currently come out with you.
+                  Turn off access in your X settings whenever you like. Your real bookmarks
+                  are untouched, so leaving costs you nothing on X. Worth knowing up front:
+                  there is no way to take your library out with you yet.
                 </p>
               </details>
             </div>
@@ -860,8 +756,8 @@ export default async function Home({
               No more endless &amp; <em>forgotten</em> bookmarks.
             </h2>
             <p className="final__support">
-              Sign in, let your history copy over, and go find the one you’ve never been
-              able to find.
+              Sign in, let your history copy over, and go find the one you could never
+              find.
             </p>
             <div className="final__act">
               <a className="btn btn--oncolour" href={ctaHref} data-loading={loadingLabel}>
@@ -869,10 +765,10 @@ export default async function Home({
               </a>
             </div>
             <p className="final__risk">
-              Read-only, so nothing here can touch your X account — and revoking access
-              leaves your actual bookmarks exactly as they are.
+              It can only read, so nothing here can touch your X account. Turn off access
+              and your bookmarks stay as they are.
               <br />
-              <b>Paid, no free tier.</b>
+              <b>Paid. No free version.</b>
             </p>
           </div>
         </section>
@@ -892,7 +788,7 @@ export default async function Home({
                   <a href="#outcomes">What you get</a>
                 </li>
                 <li>
-                  <a href="#fit">Who it’s for</a>
+                  <a href="#fit">Who it is for</a>
                 </li>
                 <li>
                   <a href="#faq">FAQ</a>
@@ -910,26 +806,21 @@ export default async function Home({
             <div>
               <h2 className="micro">bkmrks</h2>
               <p className="footer__pos">
-                <b>
-                  bkmrks — a private, searchable library for everything you’ve bookmarked on
-                  X.
-                </b>{" "}
-                Read-only. Paid, no free tier.
+                <b>bkmrks — a private, searchable home for everything you saved on X.</b>{" "}
+                Read only. Paid. No free version.
               </p>
             </div>
           </div>
           <div className="footer__base micro">
             <span>bkmrks</span>
-            <span>Read-only · Paid, no free tier</span>
+            <span>Read only · No free version</span>
           </div>
         </div>
       </footer>
 
       {/* -------------------------------------------- sticky mobile CTA (§15) */}
       <div className="sticky" id="sticky" data-shown="false">
-        <span className="sticky__sub">
-          Read-only · Paid, no free tier
-        </span>
+        <span className="sticky__sub">Read only · No free version</span>
         <a className="btn btn--oncolour" href={ctaHref} data-loading={loadingLabel}>
           {ctaLabel}
         </a>
