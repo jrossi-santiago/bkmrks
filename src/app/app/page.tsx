@@ -194,7 +194,7 @@ export default async function AppPage({
   const hasPublicBookmarks = allTags.some((t) => t.isPublic && t.count > 0);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <main className="mx-auto max-w-2xl px-4 py-8 lg:max-w-7xl">
       <AppHeader
         name={session.name}
         username={session.username}
@@ -256,7 +256,7 @@ export default async function AppPage({
               : "No bookmarks synced yet — if you just signed in, the first sync runs in the background and may take a moment. Try Refresh."}
         </p>
       ) : (
-        <ol className="space-y-4">
+        <ol className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
           {rows.map((bookmark, index) => (
             <li key={bookmark.id}>
               <BookmarkCard
