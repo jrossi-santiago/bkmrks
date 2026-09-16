@@ -1,0 +1,981 @@
+/* ==========================================================================
+   bkmrks — landing
+   Aesthetic system: docs/ref-01-frames.png (frame + poster chrome)
+                     docs/ref-02-paintings.png (texture only, duotone)
+                     docs/ref-03-color-boards.png (type, colour hits, grid)
+   Copy: docs/LANDING-FULL.md. Nothing on this page is written here.
+   ========================================================================== */
+
+.landing {
+  /* --- ink palette -------------------------------------------------- */
+  --ink: #0b0b0b;
+  --paper: #f4efe6;
+  --paper-dim: #a8a196;          /* 7.7:1 on ink */
+  --orange: #e85c2a;             /* ink on orange = 5.6:1 */
+  --blue: #1f4fd8;               /* paper on blue = 5.8:1 */
+  --blue-bright: #5c8bff;        /* blue type on ink = 6.2:1 */
+  --teal: #2a9b8f;               /* teal type on ink = 5.8:1 */
+
+  --rule: rgba(244, 239, 230, 0.18);
+  --rule-strong: rgba(244, 239, 230, 0.4);
+  --rule-ink: rgba(11, 11, 11, 0.22);
+  --rule-ink-strong: rgba(11, 11, 11, 0.45);
+  --rule-paper-on-colour: rgba(244, 239, 230, 0.32);
+
+  /* --- type ---------------------------------------------------------- */
+  --serif: var(--font-newsreader), "Newsreader", "EB Garamond", Georgia, serif;
+  --mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --micro: 0.6875rem;                              /* 11px tracked caps */
+  --small: 0.8125rem;
+  --body: clamp(1.0625rem, 0.98rem + 0.36vw, 1.1875rem);
+  --body-lg: clamp(1.1875rem, 1.06rem + 0.6vw, 1.4375rem);
+  --h4: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --h3: clamp(1.5rem, 1.25rem + 1.2vw, 2.125rem);
+  --h2: clamp(2.125rem, 1.5rem + 2.9vw, 4rem);
+  --h1: clamp(2.75rem, 1.5rem + 5.9vw, 6.5rem);
+  --display: clamp(1.75rem, 1.1rem + 3.1vw, 3.5rem);
+
+  /* --- measure ------------------------------------------------------- */
+  --gutter: clamp(1.25rem, 5vw, 5.5rem);          /* heavy black margin */
+  --max: 76rem;
+  --band-y: clamp(5.25rem, 10vw, 10.5rem);
+
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: var(--body);
+  line-height: 1.55;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+body:has(.landing) {
+  background: var(--ink);
+  color: #f4efe6;
+  margin: 0;
+}
+
+.landing *,
+.landing *::before,
+.landing *::after { box-sizing: border-box; }
+
+/* Resets are written with :where() so they carry zero specificity and never
+   outrank a component class. (.landing a {color:inherit} at (0,1,1) silently
+   beat .btn--oncolour at (0,1,0); .landing p {margin:0} beat every layout
+   margin-top set on a <p>.) */
+:where(.landing) :where(h1, h2, h3, h4, p, ul, ol, figure, dl, dd) { margin: 0; }
+
+:where(.landing) :where(h1, h2, h3, h4) {
+  font-weight: 380;
+  line-height: 1.02;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+:where(.landing) em { font-style: italic; }
+
+:where(.landing) a { color: inherit; }
+
+.landing ::selection { background: var(--orange); color: var(--ink); }
+
+.landing :focus-visible {
+  outline: 2px solid var(--blue-bright);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   Shared atoms
+   -------------------------------------------------------------------------- */
+
+.wrap {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ref-03: the "05 / VISUAL LANGUAGE" numbered micro label */
+.micro {
+  font-family: var(--mono);
+  font-size: var(--micro);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  color: var(--teal);
+  margin-bottom: clamp(1.75rem, 3.4vw, 3rem);
+}
+.label__n { font-variant-numeric: tabular-nums; opacity: 0.75; }
+.label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+  transform: translateY(-0.28em);
+}
+.band--orange .label,
+.band--paper .label { color: rgba(11, 11, 11, 0.62); }
+.band--orange .label::after,
+.band--paper .label::after { background: var(--rule-ink); }
+.band--blue .label { color: rgba(244, 239, 230, 0.78); }
+.band--blue .label::after { background: var(--rule-paper-on-colour); }
+
+.lede {
+  font-size: var(--body-lg);
+  line-height: 1.42;
+  color: var(--paper-dim);
+  max-width: 46ch;
+}
+.band--orange .lede, .band--paper .lede { color: rgba(11, 11, 11, 0.74); }
+.band--blue .lede { color: rgba(244, 239, 230, 0.86); }
+
+.prose p + p { margin-top: 1.1em; }
+.prose { max-width: 58ch; }
+
+/* --- sharp-rectangle CTA (no pill, no shadow) ------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.0625rem 2rem;
+  background: var(--orange);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  border: 1px solid var(--orange);
+  border-radius: 0;
+  transition: background 120ms linear, color 120ms linear, border-color 120ms linear;
+}
+.btn:hover { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+
+.btn--oncolour { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn--oncolour:hover { background: var(--paper); color: var(--ink); border-color: var(--ink); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--paper);
+  border-color: var(--rule-strong);
+  padding: 0.6875rem 1.125rem;
+  font-size: 0.8125rem;
+}
+.btn--ghost:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+
+.anchor-link {
+  font-family: var(--mono);
+  font-size: var(--small);
+  letter-spacing: 0.06em;
+  color: var(--paper-dim);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.2em;
+}
+.anchor-link:hover { color: var(--paper); border-color: var(--paper); }
+
+/* --------------------------------------------------------------------------
+   Bands — the colour hits (ref-03)
+   -------------------------------------------------------------------------- */
+
+.band {
+  position: relative;
+  scroll-margin-top: 4.5rem;
+  padding-block: var(--band-y);
+  border-top: 1px solid var(--rule);
+}
+.band--flush { border-top: 0; }
+
+.band--orange { background: var(--orange); color: var(--ink); border-top-color: transparent; }
+.band--blue   { background: var(--blue);   color: var(--paper); border-top-color: transparent; }
+.band--paper  { background: var(--paper);  color: var(--ink); border-top-color: transparent; }
+
+.band--orange::after,
+.band--blue::after,
+.band--paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.band--blue::after { opacity: 0.1; }
+
+/* --------------------------------------------------------------------------
+   Nav
+   -------------------------------------------------------------------------- */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--ink);
+  border-bottom: 1px solid var(--rule);
+}
+.nav__in {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  min-height: 4.25rem;
+}
+.nav__mark {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: var(--paper);
+  margin-right: auto;
+}
+.nav__mark::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: var(--orange);
+  width: 100%;
+  margin-top: 0.3rem;
+}
+.nav__links { display: flex; gap: clamp(1rem, 2.5vw, 2rem); }
+.nav__links a {
+  font-family: var(--mono);
+  font-size: var(--micro);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  text-decoration: none;
+}
+.nav__links a:hover { color: var(--paper); }
+
+@media (max-width: 800px) { .nav__links { display: none; } }
+
+/* --------------------------------------------------------------------------
+   Hero — ref-01: inset poster, running micro-type frame, heavy black margin
+   -------------------------------------------------------------------------- */
+
+.hero { scroll-margin-top: 4.5rem; padding-block: clamp(2.5rem, 5vw, 5rem) clamp(4rem, 8vw, 8rem); }
+
+.frame {
+  position: relative;
+  padding: clamp(1.75rem, 3.2vw, 3.25rem);
+}
+
+.frame__run {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--blue-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+}
+.frame__run i { font-style: normal; padding-right: 1.2em; }
+
+.frame__run--top,
+.frame__run--bottom { left: 0; right: 0; height: 1.1em; }
+.frame__run--top { top: clamp(0.5rem, 1.2vw, 1.1rem); }
+.frame__run--bottom { bottom: clamp(0.5rem, 1.2vw, 1.1rem); }
+
+.frame__run--top span,
+.frame__run--bottom span {
+  display: inline-block;
+  will-change: transform;
+  animation: creep 150s linear infinite;
+}
+.frame__run--bottom span { animation-direction: reverse; }
+
+@keyframes creep {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .frame__run--top span,
+  .frame__run--bottom span { animation: none; }
+}
+
+.frame__run--left,
+.frame__run--right {
+  top: clamp(3rem, 5vw, 4.5rem);
+  bottom: clamp(3rem, 5vw, 4.5rem);
+  width: 1.1em;
+  writing-mode: vertical-rl;
+}
+.frame__run--right { right: clamp(0.5rem, 1.2vw, 1.1rem); }
+.frame__run--left { left: clamp(0.5rem, 1.2vw, 1.1rem); transform: rotate(180deg); }
+
+.frame__inner {
+  position: relative;
+  border: 1px solid var(--rule);
+  padding: clamp(1.75rem, 4vw, 4rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(7rem, 15%, 13rem);
+  gap: clamp(1.75rem, 4vw, 4rem);
+}
+
+@media (max-width: 900px) {
+  .frame__run--left, .frame__run--right { display: none; }
+  .frame__inner { grid-template-columns: minmax(0, 1fr); }
+}
+
+.hero__eyebrow { color: var(--teal); margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
+
+.hero h1 {
+  font-size: var(--h1);
+  line-height: 0.96;
+  letter-spacing: -0.028em;
+  max-width: 14ch;
+}
+.hero h1 em { color: var(--paper); }
+
+.hero__sub {
+  margin-top: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-size: var(--body-lg);
+  line-height: 1.38;
+  color: var(--paper-dim);
+  max-width: 44ch;
+}
+
+.hero__act {
+  margin-top: clamp(2rem, 3.6vw, 3rem);
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.hero__trust {
+  margin-top: 1.5rem;
+  font-family: var(--mono);
+  font-size: var(--small);
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+  color: var(--paper-dim);
+  max-width: 54ch;
+}
+.hero__trust b { color: var(--paper); font-weight: 500; }
+
+.hero__perm {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: var(--small);
+  line-height: 1.6;
+  color: var(--paper-dim);
+  max-width: 50ch;
+}
+
+.hero__mark {
+  margin-top: clamp(2rem, 3.5vw, 3rem);
+  color: rgba(244, 239, 230, 0.42);
+}
+
+/* ref-02 as texture only: a duotone film at the edge of the hero, kept quiet
+   enough that it never competes with the H1 or the CTA. Never a portrait. */
+.texture {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  min-height: 18rem;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(244, 239, 230, 0.045) 0 1px,
+      transparent 1px 5px
+    ),
+    linear-gradient(199deg,
+      rgba(42, 155, 143, 0.4) 0%,
+      rgba(42, 155, 143, 0.16) 26%,
+      rgba(42, 155, 143, 0.05) 52%,
+      var(--ink) 88%),
+    var(--ink);
+}
+.texture::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background-image: var(--grain);
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+}
+/* cracked-varnish hairlines, barely there */
+.texture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      71deg,
+      rgba(11, 11, 11, 0.42) 0 1px,
+      transparent 1px 34px
+    ),
+    radial-gradient(135% 58% at 50% 2%, transparent 26%, rgba(11, 11, 11, 0.92) 100%);
+}
+
+@media (max-width: 900px) { .texture { min-height: 8rem; } }
+
+/* login error banner (real app state) */
+.notice {
+  border: 1px solid var(--orange);
+  padding: 1.125rem 1.375rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  max-width: 44ch;
+}
+.notice strong { display: block; font-weight: 500; font-size: var(--h4); color: var(--orange); }
+.notice p { margin-top: 0.4rem; font-size: var(--small); color: var(--paper-dim); font-family: var(--mono); line-height: 1.7; }
+
+/* --------------------------------------------------------------------------
+   Problem — the unbroken column. Dense, undifferentiated, no controls.
+   -------------------------------------------------------------------------- */
+
+.sec__head { max-width: 32ch; }
+.sec__head h2 { font-size: var(--h2); }
+.sec__head .lede { margin-top: clamp(1rem, 2vw, 1.5rem); }
+
+.column {
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  max-width: 60ch;
+  border-top: 1px solid var(--rule);
+}
+.column__beat { padding-block: clamp(1.75rem, 3vw, 2.5rem); border-bottom: 1px solid var(--rule); }
+.column__beat h3 { font-size: var(--h4); margin-bottom: 0.7rem; }
+.column__beat p { color: var(--paper-dim); }
+
+.closer {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  font-size: var(--display);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  max-width: 22ch;
+}
+
+.aside-note {
+  margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  font-family: var(--mono);
+  font-size: var(--small);
+  line-height: 1.8;
+  color: rgba(244, 239, 230, 0.5);
+  max-width: 52ch;
+}
+
+/* --------------------------------------------------------------------------
+   Stakes — type only, one large pull quote
+   -------------------------------------------------------------------------- */
+
+.stakes__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+@media (max-width: 860px) { .stakes__grid { grid-template-columns: minmax(0, 1fr); } }
+
+.stakes__grid .prose p { color: var(--paper-dim); }
+
+.pull {
+  margin-top: clamp(3rem, 6vw, 5.5rem);
+  font-size: var(--display);
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  color: var(--orange);
+  max-width: 26ch;
+  border-top: 1px solid var(--rule);
+  padding-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* --------------------------------------------------------------------------
+   Interstitials
+   -------------------------------------------------------------------------- */
+
+.inter { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.inter p {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+  font-size: var(--h3);
+  line-height: 1.2;
+  letter-spacing: -0.018em;
+  max-width: 34ch;
+  margin-inline: auto;
+  text-align: center;
+}
+.inter em { color: var(--teal); }
+
+/* --------------------------------------------------------------------------
+   After — colour hit #1 (orange, ink type) — ref-03 left panel
+   -------------------------------------------------------------------------- */
+
+.after__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 5.5rem);
+  align-items: start;
+}
+@media (max-width: 860px) { .after__grid { grid-template-columns: minmax(0, 1fr); } }
+
+.after__grid h2 { font-size: var(--h2); max-width: 11ch; }
+.after__body { color: rgba(11, 11, 11, 0.74); margin-top: 1.1em; max-width: 46ch; }
+
+.promise {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  border-top: 1px solid var(--rule-ink-strong);
+  padding-top: clamp(1.5rem, 3vw, 2.25rem);
+  font-size: var(--display);
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  max-width: 24ch;
+}
+.promise em { display: block; }
+
+/* --------------------------------------------------------------------------
+   Outcomes — the boxed, bounded, countable board (hairline grid, no icons)
+   -------------------------------------------------------------------------- */
+
+.board {
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.board__cell {
+  background: var(--ink);
+  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-height: 15rem;
+}
+.board__n { color: var(--orange); font-variant-numeric: tabular-nums; }
+.board__cell h3 { font-size: var(--h4); letter-spacing: -0.012em; line-height: 1.12; }
+.board__cell p:not(.board__n) { font-size: 1rem; line-height: 1.5; color: var(--paper-dim); margin-top: auto; }
+
+@media (max-width: 1000px) { .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .board { grid-template-columns: minmax(0, 1fr); } .board__cell { min-height: 0; } }
+
+/* --------------------------------------------------------------------------
+   How it works — colour hit #2 (printer blue, paper type)
+   3 numbered steps, one horizontal strip, hairline dividers, no icons
+   -------------------------------------------------------------------------- */
+
+.steps {
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--rule-paper-on-colour);
+}
+.step {
+  padding: clamp(1.75rem, 3vw, 2.75rem) clamp(1.25rem, 2.4vw, 2.25rem);
+  border-right: 1px solid var(--rule-paper-on-colour);
+}
+.step:first-child { padding-left: 0; }
+.step:last-child { border-right: 0; padding-right: 0; }
+.step__n {
+  font-family: var(--serif);
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+  line-height: 1;
+  font-style: italic;
+  color: rgba(244, 239, 230, 0.55);
+  display: block;
+  margin-bottom: 1.25rem;
+}
+.step h3 { font-size: var(--h4); margin-bottom: 0.75rem; }
+.step p { font-size: 1rem; line-height: 1.5; color: rgba(244, 239, 230, 0.86); }
+
+@media (max-width: 840px) {
+  .steps { grid-template-columns: minmax(0, 1fr); }
+  .step { border-right: 0; border-bottom: 1px solid var(--rule-paper-on-colour); padding-inline: 0; }
+  .step:last-child { border-bottom: 0; }
+}
+
+.reassure {
+  margin-top: clamp(2.5rem, 4vw, 3.5rem);
+  border: 1px solid var(--rule-paper-on-colour);
+  padding: clamp(1.5rem, 2.6vw, 2rem);
+  font-family: var(--mono);
+  font-size: var(--small);
+  line-height: 1.8;
+  max-width: 46rem;
+}
+
+/* --------------------------------------------------------------------------
+   Walkthrough — the product UI once, as a framed object on black
+   -------------------------------------------------------------------------- */
+
+.ui {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  border: 1px solid var(--rule-strong);
+  max-width: 48rem;
+  background: var(--ink);
+}
+.ui__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 2.2vw, 1.75rem);
+  border-bottom: 1px solid var(--rule);
+}
+.ui__bar .ui__title { font-size: 1rem; }
+.ui__bar .micro { color: var(--paper-dim); }
+.ui__body { padding: clamp(1.25rem, 2.4vw, 1.75rem); display: grid; gap: 0.75rem; }
+.ui__field {
+  border: 1px solid var(--rule-strong);
+  padding: 0.875rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+.ui__field--empty { color: var(--paper-dim); border-color: var(--rule); }
+.ui__caret {
+  width: 1px;
+  height: 1.1em;
+  background: var(--orange);
+  display: inline-block;
+  margin-left: 0.15rem;
+}
+.ui__chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+.ui__chip {
+  border: 1px solid var(--rule);
+  padding: 0.45rem 0.75rem;
+  font-family: var(--mono);
+  font-size: var(--micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+.ui__chip--on { border-color: var(--teal); color: var(--teal); }
+
+.moments {
+  margin-top: clamp(2.5rem, 4.5vw, 4rem);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.moment { background: var(--ink); padding: clamp(1.5rem, 2.6vw, 2.25rem) clamp(1.25rem, 2.2vw, 1.75rem); }
+.moment:first-child { padding-left: 0; }
+.moment:last-child { padding-right: 0; }
+.moment__n { color: var(--teal); display: block; margin-bottom: 1rem; }
+.moment h3 { font-size: var(--h4); margin-bottom: 0.65rem; }
+.moment p { font-size: 1rem; line-height: 1.5; color: var(--paper-dim); }
+
+@media (max-width: 840px) {
+  .moments { grid-template-columns: minmax(0, 1fr); }
+  .moment { padding-inline: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Use cases — three columns of type, rules between
+   -------------------------------------------------------------------------- */
+
+.cases {
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+.case { border-top: 2px solid var(--paper); padding-top: clamp(1.25rem, 2vw, 1.75rem); }
+.case h3 { font-size: var(--h4); margin-bottom: 1rem; }
+.case p { font-size: 1rem; line-height: 1.55; color: var(--paper-dim); }
+.case p + p { margin-top: 0.85em; }
+.case b { color: var(--paper); font-weight: 500; font-style: italic; }
+
+@media (max-width: 840px) { .cases { grid-template-columns: minmax(0, 1fr); } }
+
+/* --------------------------------------------------------------------------
+   Comparison — typographic table on paper. The lost row is styled identically.
+   -------------------------------------------------------------------------- */
+
+.compare-wrap { margin-top: clamp(2.5rem, 5vw, 4rem); overflow-x: auto; }
+
+.compare {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.compare th, .compare td {
+  border-top: 1px solid var(--rule-ink);
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(0.875rem, 1.6vw, 1.5rem);
+  vertical-align: top;
+  font-weight: 400;
+}
+.compare thead th {
+  border-top: 0;
+  border-bottom: 1px solid var(--rule-ink-strong);
+  font-family: var(--mono);
+  font-size: var(--micro);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(11, 11, 11, 0.62);
+  padding-top: 0;
+}
+.compare thead th:last-child { color: var(--ink); }
+.compare tbody th {
+  font-family: var(--serif);
+  font-size: var(--h4);
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+  width: 20%;
+  padding-left: 0;
+}
+.compare td { color: rgba(11, 11, 11, 0.7); }
+.compare td:last-child { color: var(--ink); padding-right: 0; width: 26%; }
+.compare tbody tr td:last-child { box-shadow: inset 1px 0 0 var(--rule-ink); }
+
+.compare-note {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--rule-ink-strong);
+  padding-top: clamp(1.25rem, 2vw, 1.75rem);
+  font-size: var(--body);
+  max-width: 54ch;
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   Fit — two columns, rule between, equal weight. No de-emphasis, ever.
+   -------------------------------------------------------------------------- */
+
+.fit {
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+.fit__col { border-top: 1px solid var(--rule); padding-top: clamp(1.25rem, 2vw, 1.75rem); }
+.fit__col + .fit__col { border-left: 1px solid var(--rule); padding-left: clamp(2rem, 5vw, 4.5rem); }
+.fit__col h3 { font-size: var(--h3); margin-bottom: clamp(1.25rem, 2.4vw, 2rem); }
+.fit__col ul { list-style: none; padding: 0; }
+.fit__col li {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--paper-dim);
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--rule);
+  padding-left: 1.6rem;
+  position: relative;
+}
+.fit__col li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--paper);
+  opacity: 0.45;
+}
+
+@media (max-width: 840px) {
+  .fit { grid-template-columns: minmax(0, 1fr); }
+  .fit__col + .fit__col { border-left: 0; padding-left: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Trust — four constraints + the counterweight, same size, no badges
+   -------------------------------------------------------------------------- */
+
+.constraints {
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.constraint { background: var(--ink); padding: clamp(1.5rem, 2.8vw, 2.25rem); }
+.constraint dt {
+  font-family: var(--mono);
+  font-size: var(--micro);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 1rem;
+}
+.constraint dd { font-size: 1rem; line-height: 1.5; color: var(--paper-dim); }
+/* Five cells in a two-column grid leave a hole; the counterweight takes the
+   whole row. Same size, same treatment — LANDING-FULL §12 is explicit that it
+   must never be visually demoted. */
+.constraint--counter { grid-column: 1 / -1; }
+.constraint--counter dt { color: var(--orange); }
+.constraint--counter dd { max-width: 72ch; }
+
+@media (max-width: 760px) { .constraints { grid-template-columns: minmax(0, 1fr); } }
+
+/* --------------------------------------------------------------------------
+   FAQ — paper band, serif questions
+   -------------------------------------------------------------------------- */
+
+.faq { margin-top: clamp(2.5rem, 5vw, 4rem); max-width: 60rem; border-top: 1px solid var(--rule-ink); }
+.faq details { border-bottom: 1px solid var(--rule-ink); }
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: clamp(1.125rem, 2vw, 1.5rem);
+  font-size: var(--h4);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+";
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: rgba(11, 11, 11, 0.55);
+  flex: none;
+}
+.faq details[open] summary::after { content: "–"; }
+.faq details p {
+  padding-bottom: clamp(1.25rem, 2.2vw, 1.75rem);
+  max-width: 62ch;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: rgba(11, 11, 11, 0.74);
+}
+.faq details p + p { margin-top: 0.9em; }
+
+/* --------------------------------------------------------------------------
+   Final CTA — last colour hit, same button as the hero (inverted on orange)
+   -------------------------------------------------------------------------- */
+
+.final { text-align: left; }
+.final__run {
+  position: absolute;
+  top: clamp(0.9rem, 2vw, 1.6rem);
+  left: 0; right: 0;
+  overflow: hidden;
+  height: 1.1em;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(11, 11, 11, 0.42);
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+.final__run i { font-style: normal; padding-right: 1.2em; }
+.final h2 { font-size: var(--h2); max-width: 15ch; }
+.final__support { margin-top: clamp(1.25rem, 2.4vw, 2rem); font-size: var(--body-lg); line-height: 1.38; max-width: 40ch; }
+.final__act { margin-top: clamp(2rem, 3.6vw, 3rem); }
+.final__risk {
+  margin-top: 1.75rem;
+  font-family: var(--mono);
+  font-size: var(--small);
+  line-height: 1.8;
+  max-width: 56ch;
+  color: rgba(11, 11, 11, 0.78);
+}
+.final__risk b { color: var(--ink); font-weight: 500; }
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.footer { border-top: 1px solid var(--rule); padding-block: clamp(3rem, 6vw, 5rem) clamp(2rem, 4vw, 3rem); }
+.footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: clamp(2rem, 5vw, 5rem);
+}
+.footer h2 { font-size: var(--micro); }
+.footer__nav { list-style: none; padding: 0; display: grid; gap: 0.7rem; margin-top: 1.25rem; }
+.footer__nav a {
+  font-family: var(--mono);
+  font-size: var(--small);
+  letter-spacing: 0.04em;
+  color: var(--paper-dim);
+  text-decoration: none;
+}
+.footer__nav a:hover { color: var(--paper); }
+.footer__pos { font-size: var(--body); line-height: 1.5; color: var(--paper-dim); max-width: 44ch; margin-top: 1.25rem; }
+.footer__pos b { color: var(--paper); font-weight: 400; }
+.footer__base {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: rgba(244, 239, 230, 0.42);
+}
+
+@media (max-width: 760px) { .footer__grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* --------------------------------------------------------------------------
+   Sticky mobile CTA — mobile only, after the hero leaves
+   -------------------------------------------------------------------------- */
+
+.sticky {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem var(--gutter);
+  background: var(--orange);
+  color: var(--ink);
+  border-top: 1px solid var(--ink);
+  transform: translateY(100%);
+  transition: transform 160ms ease-out;
+}
+.sticky[data-shown="true"] { transform: translateY(0); }
+.sticky__sub {
+  font-family: var(--mono);
+  font-size: var(--micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  min-width: 0;
+}
+.sticky .btn { padding: 0.75rem 1.25rem; font-size: 0.8125rem; white-space: nowrap; flex: none; }
+
+@media (max-width: 800px) {
+  .sticky { display: flex; }
+  .landing { padding-bottom: 4.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { .sticky { transition: none; } }
+
+/* --------------------------------------------------------------------------
+   Mobile copy switches, per LANDING-FULL short variants
+   -------------------------------------------------------------------------- */
+
+.only-narrow { display: none; }
+
+@media (max-width: 700px) {
+  .only-wide { display: none; }
+  .only-narrow { display: revert; }
+  .hero__perm, .hero__mark { display: none; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
