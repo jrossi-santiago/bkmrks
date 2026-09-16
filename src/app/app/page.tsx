@@ -22,7 +22,11 @@ import { TagManager } from "@/components/TagManager";
 const PAGE_SIZE = 100;
 // Upper bound on ?limit= so "Show more" can't be clicked (or the URL
 // edited) back into the unbounded-payload problem PAGE_SIZE exists to fix.
-const MAX_LIMIT = PAGE_SIZE * 10;
+// Raised from 10x (1000) to cover accounts with several thousand
+// bookmarks; still a hard ceiling, not real pagination — a heavy account
+// clicking through it repeatedly still grows the query and page payload
+// linearly, same tradeoff as before, just with more headroom.
+const MAX_LIMIT = PAGE_SIZE * 50;
 
 // Phase 2: reads from the database — bookmarks are synced on login and on
 // manual refresh (see /app/refresh), not fetched from X on every page load.
