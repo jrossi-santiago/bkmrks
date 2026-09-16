@@ -266,11 +266,11 @@ body:has(.landing) {
    Hero — ref-01: inset poster, running micro-type frame, heavy black margin
    -------------------------------------------------------------------------- */
 
-.hero { scroll-margin-top: 4.5rem; padding-block: clamp(2.5rem, 5vw, 5rem) clamp(4rem, 8vw, 8rem); }
+.hero { scroll-margin-top: 4.5rem; padding-block: clamp(1.5rem, 2.6vw, 2.5rem) clamp(2.5rem, 5vw, 4.5rem); }
 
 .frame {
   position: relative;
-  padding: clamp(1.75rem, 3.2vw, 3.25rem);
+  padding: clamp(1.5rem, 2.4vw, 2.5rem);
 }
 
 .frame__run {
@@ -292,22 +292,10 @@ body:has(.landing) {
 .frame__run--top { top: clamp(0.5rem, 1.2vw, 1.1rem); }
 .frame__run--bottom { bottom: clamp(0.5rem, 1.2vw, 1.1rem); }
 
-.frame__run--top span,
-.frame__run--bottom span {
-  display: inline-block;
-  will-change: transform;
-  animation: creep 150s linear infinite;
-}
-.frame__run--bottom span { animation-direction: reverse; }
-
-@keyframes creep {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .frame__run--top span,
-  .frame__run--bottom span { animation: none; }
-}
+/* The running sentence is set type, not a marquee: it holds still and is
+   simply clipped by the frame at both ends. */
+.frame__run--top > span,
+.frame__run--bottom > span { display: inline-block; }
 
 .frame__run--left,
 .frame__run--right {
@@ -322,10 +310,11 @@ body:has(.landing) {
 .frame__inner {
   position: relative;
   border: 1px solid var(--rule);
-  padding: clamp(1.75rem, 4vw, 4rem);
+  padding: clamp(1.5rem, 2.8vw, 2.75rem);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(7rem, 15%, 13rem);
-  gap: clamp(1.75rem, 4vw, 4rem);
+  grid-template-columns: minmax(0, 1fr) clamp(8rem, 22%, 17rem);
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: stretch;
 }
 
 @media (max-width: 900px) {
@@ -333,47 +322,57 @@ body:has(.landing) {
   .frame__inner { grid-template-columns: minmax(0, 1fr); }
 }
 
-.hero__eyebrow { color: var(--teal); margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
+.hero__eyebrow { color: var(--teal); margin-bottom: clamp(1rem, 1.8vw, 1.5rem); }
 
+/* The H1 is set a step below the global --h1 and given a long measure: the
+   tagline reads across in two wide lines instead of stacking four tall ones,
+   which is what pushed the poster past the fold. */
 .hero h1 {
-  font-size: var(--h1);
-  line-height: 0.96;
+  font-size: clamp(2.375rem, 1.2rem + 4.1vw, 4rem);
+  line-height: 0.98;
   letter-spacing: -0.028em;
-  max-width: 14ch;
+  max-width: 22ch;
 }
 .hero h1 em { color: var(--paper); }
 
 .hero__sub {
-  margin-top: clamp(1.5rem, 2.6vw, 2.25rem);
+  margin-top: clamp(1rem, 1.8vw, 1.5rem);
   font-size: var(--body-lg);
   line-height: 1.38;
   color: var(--paper-dim);
-  max-width: 44ch;
+  max-width: 52ch;
 }
 
 .hero__act {
-  margin-top: clamp(2rem, 3.6vw, 3rem);
+  margin-top: clamp(1.5rem, 2.4vw, 2rem);
   display: flex;
   align-items: center;
   gap: 1.75rem;
   flex-wrap: wrap;
 }
 
+/* Trust line and permission note sit side by side on wide screens — two short
+   columns instead of one long stack. */
+.hero__fine {
+  margin-top: clamp(1.25rem, 2vw, 1.75rem);
+  padding-top: clamp(1.25rem, 2vw, 1.75rem);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem clamp(1.5rem, 3vw, 2.5rem);
+}
+
 .hero__trust {
-  margin-top: 1.5rem;
   font-family: var(--mono);
   font-size: var(--small);
-  line-height: 1.75;
+  line-height: 1.7;
   letter-spacing: 0.01em;
   color: var(--paper-dim);
-  max-width: 54ch;
+  max-width: 42ch;
 }
 .hero__trust b { color: var(--paper); font-weight: 500; }
 
 .hero__perm {
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--rule);
   font-size: var(--small);
   line-height: 1.6;
   color: var(--paper-dim);
@@ -381,8 +380,24 @@ body:has(.landing) {
 }
 
 .hero__mark {
-  margin-top: clamp(2rem, 3.5vw, 3rem);
+  margin-top: clamp(1.25rem, 2vw, 1.75rem);
   color: rgba(244, 239, 230, 0.42);
+}
+
+@media (min-width: 1000px) {
+  .hero__fine { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); }
+  .hero__perm { border-left: 1px solid var(--rule); padding-left: clamp(1.5rem, 3vw, 2.5rem); }
+}
+
+/* Short viewports (most laptops): pull the poster in another notch so the
+   whole thing still lands above the fold. */
+@media (min-width: 901px) and (max-height: 860px) {
+  .hero { padding-block: 1.25rem 2rem; }
+  .frame { padding: clamp(1.25rem, 2vw, 2rem); }
+  .frame__inner { padding: clamp(1.25rem, 2.2vw, 2.25rem); }
+  .hero h1 { font-size: clamp(2.25rem, 0.9rem + 3.3vw, 3.25rem); }
+  .hero__sub { font-size: var(--body); }
+  .texture { min-height: 0; }
 }
 
 /* ref-02 as texture only: a duotone film at the edge of the hero, kept quiet
@@ -427,7 +442,7 @@ body:has(.landing) {
     radial-gradient(135% 58% at 50% 2%, transparent 26%, rgba(11, 11, 11, 0.92) 100%);
 }
 
-@media (max-width: 900px) { .texture { min-height: 8rem; } }
+@media (max-width: 900px) { .texture { min-height: 6.5rem; } }
 
 /* login error banner (real app state) */
 .notice {

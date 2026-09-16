@@ -114,10 +114,10 @@ export default async function Home({
           <div className="wrap">
             <div className="frame">
               <span className="frame__run frame__run--top" aria-hidden="true">
-                <span>{runs(24)}</span>
+                <span>{runs(12)}</span>
               </span>
               <span className="frame__run frame__run--bottom" aria-hidden="true">
-                <span>{runs(24)}</span>
+                <span>{runs(12)}</span>
               </span>
               <span className="frame__run frame__run--left" aria-hidden="true">
                 {runs(3)}
@@ -158,16 +158,18 @@ export default async function Home({
                     </a>
                   </div>
 
-                  <p className="hero__trust">
-                    <b>Read-only</b> — bkmrks can’t post, like, follow, or DM from your
-                    account. <b>Paid, no free tier.</b>
-                  </p>
+                  <div className="hero__fine">
+                    <p className="hero__trust">
+                      <b>Read-only</b> — bkmrks can’t post, like, follow, or DM from your
+                      account. <b>Paid, no free tier.</b>
+                    </p>
 
-                  <p className="hero__perm">
-                    No developer account, no API key, no X Premium. X will ask you to allow
-                    read access to your bookmarks and profile. That’s all bkmrks asks for,
-                    and all it can use.
-                  </p>
+                    <p className="hero__perm">
+                      No developer account, no API key, no X Premium. X will ask you to
+                      allow read access to your bookmarks and profile. That’s all bkmrks
+                      asks for, and all it can use.
+                    </p>
+                  </div>
 
                   <p className="micro hero__mark">bkmrks · Read-only · Paid, no free tier</p>
                 </div>
