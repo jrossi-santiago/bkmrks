@@ -26,7 +26,10 @@ two-thirds of that, plus one large thing the brief never mentions:
   lists digest emails under Phase 7 as explicitly deferred. **This is the
   single biggest gap between the founder brief and the shipped product.**
   Today the product makes old saves *retrievable on demand*; it does not
-  *bring them back to you*.
+  *bring them back to you*. The final tagline (§12) is scoped to exactly that
+  distinction and stays on the right side of it — it claims forgotten
+  bookmarks end because you can reach them, never that the product remembers
+  for you.
 - **It has a pillar the brief omits: publishing.** Any tag can be flipped
   public, which creates an unauthenticated, shareable page at
   `/u/:handle/:tag` plus a public profile at `/u/:handle` listing your
@@ -77,8 +80,12 @@ it sits in a 3,000-item scroll. So the list becomes write-only.
 - *Saves are trapped.* A tag can be published as a standalone page anyone can
   open with no login (`src/lib/public.ts`, `src/app/u/`).
 
-**Not attacked (be honest in marketing):** forgetting. Nothing in the product
-prompts you to come back.
+**Not attacked (be honest in marketing):** *being reminded.* Nothing in the
+product prompts you to come back — no digest, no reminder, no unread queue.
+Note the seam this creates with the final tagline ("No more endless &
+forgotten bookmarks," §12): the product ends forgetting on the **retrieval**
+side, by making any save reachable on demand. It does not end it on the
+**prompting** side. Marketing gets the first half and never the second.
 
 ## 3. Who it is for
 
@@ -519,16 +526,30 @@ The product name is lowercase, vowel-dropped, and unbranded. Everything below
 is **consistent with that existing voice**; where it goes beyond what's
 written in the app it is marked **(proposed)**.
 
-**Words we use.** bookmarks · saved · library · tag · public page · share
-link · search · filter · sync · refresh · dashboard · clean · your own.
-**(proposed):** graveyard · pile · findable · yours · the bottom of the pile
-· one URL.
+**Tagline (final, canonical): "No more endless & forgotten bookmarks."**
+Set by the founder; it is not rewritten downstream. Both words describe the
+*before* state ending — the endless chronological list, and what that list
+does to what's in it. The governing rule, which every downstream asset
+inherits: **"forgotten" names the graveyard we end, never a feature that
+remembers for you.** The product has no reminder, digest, or resurfacing
+mechanic (§5), so "no more forgotten bookmarks" must always mean *you can get
+them back*, never *we bring them to you*. In a hero it is always paired with a
+subhead carrying the mechanism — e.g. "Every post you've saved on X, in one
+library you can search by what it was about — not what it said." See
+`docs/OFFER.md` § The tagline for the full rule.
+
+**Words we use.** endless · forgotten · bookmarks · saved · library · tag ·
+public page · share link · search · filter · sync · refresh · dashboard ·
+clean · your own. **(proposed):** graveyard · pile · findable · yours · the
+bottom of the pile · one URL.
 
 **Words we avoid.** we · revolutionary · AI-powered · platform · seamless ·
 supercharge · effortlessly · game-changing · knowledge graph · second brain ·
-10x. Also avoid **"never forget"** and anything implying the product reminds
-you — it doesn't (§5). Avoid **"own your data"** as an absolute until export
-exists. Avoid "free."
+10x. Avoid every word that implies the product acts on you — **remind,
+reminder, resurface, digest, nudge, alert, unread, review queue, "never forget
+a bookmark again"** — since none of it exists (§5); this is the one line the
+tagline's "forgotten" cannot cross. Avoid **"own your data"** as an absolute
+until export exists. Avoid "free."
 
 **Promises we can make without lying.**
 
@@ -561,15 +582,19 @@ tool that looks like a filing cabinet, not like X.
 
 ## 13. Marketing building blocks
 
-**Homepage headline + subhead — option A (retrieval angle):**
-> **Your X bookmarks, finally findable.**
-> Search everything you've ever saved by what it was about — not what it
-> said, who posted it, or where it landed in the scroll.
+**Homepage headline + subhead — the canonical pairing (use this):**
+> **No more endless & forgotten bookmarks.**
+> Every post you've saved on X, in one library you can search by what it was
+> about — not what it said.
 
-**Option B (graveyard angle):**
-> **Stop saving posts into a graveyard.**
-> bkmrks copies your entire X bookmark history into a library you can
-> search, tag, and share one link from.
+The headline is the final tagline and does not get rewritten. Only the subhead
+is variable — it exists to carry the mechanism so the headline is never read
+as a promise of reminders. Two alternate subheads, same job:
+> Search everything you've ever saved by what it was about — not what it said,
+> who posted it, or where it landed in the scroll.
+
+> Your entire X bookmark history, pulled out of the scroll into a library you
+> can search, tag, and share one link from.
 
 **Three feature blocks.**
 

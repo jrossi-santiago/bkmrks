@@ -6,6 +6,39 @@
 > not exist in this product, so they are absent from the offer and parked in
 > "What we are not claiming." Price is unset; nothing here invents one.
 
+## The tagline
+
+> **No more endless & forgotten bookmarks.**
+
+This is the final, canonical tagline. It goes on the landing hero, the launch
+thread, the waitlist email, and the design brief, and it is not rewritten
+downstream.
+
+**What it means, and the one rule that keeps it honest.** Both words point at
+the *before* state ending. "Endless" is the list — one infinite
+reverse-chronological column with no tags, no groups, and no way to narrow it.
+"Forgotten" is what that list does to what's in it: a save you cannot retrieve
+is a save you have effectively forgotten, whether or not you remember making
+it. The tagline promises that both conditions end — because the pile becomes a
+library you can search by meaning and reopen on demand.
+
+It does **not** promise that the product will remind you, resurface old saves,
+or bring anything back to you unprompted. It has no mechanism for that (see
+"What we are not claiming"). The rule for every writer downstream:
+
+> **"Forgotten" describes the graveyard we end, never a feature that
+> remembers for you.** Ending forgetting by making retrieval work is the
+> claim. "We'll make sure you don't forget" is not, and neither is "never
+> forget a bookmark again."
+
+**Never run it naked.** In a hero, the tagline is always paired with a subhead
+that lands the mechanism, so the reminder reading is foreclosed before anyone
+can take it:
+
+> **No more endless & forgotten bookmarks.**
+> Every post you've saved on X, in one library you can search by what it was
+> about — not what it said.
+
 ## The offer in one sentence
 
 For the person with two thousand X bookmarks they have never once
@@ -271,9 +304,13 @@ later, it goes here then, not now.
 
 ## Words to use / words to kill
 
-**Use:** library · pile · buried · graveyard · find · reopen · get it back ·
-what it was about · saved for later and never later · your copy · one query ·
-the bottom of the pile · hand someone the link.
+**Use:** endless · forgotten · library · pile · buried · graveyard · find ·
+reopen · get it back · what it was about · saved for later and never later ·
+your copy · one query · the bottom of the pile · hand someone the link.
+
+*Endless* and *forgotten* are the tagline's words and carry the brand — use
+them freely about the before state and about what ends. See the rule under
+"The tagline" for the one line they cannot cross.
 
 **Kill:** synergy · all-in-one · unlock · seamless · next-gen · robust ·
 solution · deliverables · platform · supercharge · second brain · knowledge
@@ -285,14 +322,18 @@ semantic search, source order, soft delete, server-rendered. The one plain
 term the mechanism section is allowed is *searches by meaning*, and that's
 enough.
 
-**Kill for accuracy, not style:** "never forget" and every relative of it
-(remind, resurface, digest, nudge, bring it back to you). The product has no
-mechanism for it. Also "own your data" as an absolute — no export means we
-haven't earned the phrase.
+**Kill for accuracy, not style:** every word that implies the product acts
+on you — remind, reminder, resurface, digest, nudge, alert, unread, review
+queue, "bring it back to you," "never forget a bookmark again." The product
+has no mechanism for any of it. The distinction the tagline lives on:
+*forgotten bookmarks end* (true — retrieval works) is fine; *we remember for
+you* (false — nothing prompts you) is not. Also kill "own your data" as an
+absolute — no export means we haven't earned the phrase.
 
 ## Assets to write next (do not write them here)
 
-- Landing hero — headline, subhead, one CTA, built off the one-sentence offer.
+- Landing hero — the tagline verbatim as the headline, its paired subhead,
+  one CTA. The one-sentence offer is the brief behind it, not the headline.
 - Three outcome bullets for the landing page, taken from the offer stack, not
   the feature list.
 - Waitlist / activation email — one email, built on the before→after, ending
@@ -300,14 +341,18 @@ haven't earned the phrase.
 - One launch thread — the before is the hook; the product enters late.
 - One design prompt — "design the after": the moment a four-month-old thread
   appears from a vague description. Not the settings page, not the tag
-  manager.
+  manager. The tagline is the brief — design the end of endless, not a
+  feature tour.
 - A pricing page, blocked until the commercial wrapper is decided.
 
 ## What we are not claiming
 
-- That it reminds you, resurfaces old saves, emails you a digest, or gives
-  you an unread queue. None of that exists.
-- That you'll "never forget a bookmark again."
+- That it reminds you, resurfaces old saves, emails you a digest, alerts
+  you, or gives you an unread queue. None of that exists, and the tagline
+  does not imply it — "no more forgotten bookmarks" means you can get them
+  back, not that we bring them to you.
+- That you'll "never forget a bookmark again," or any phrasing where the
+  product is the one doing the remembering.
 - That you can export your library. You can't, yet.
 - That anything is stored locally or works offline.
 - That it saves anything from outside X — no extension, no share sheet, no
