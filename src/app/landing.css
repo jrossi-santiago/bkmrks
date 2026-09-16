@@ -160,6 +160,9 @@ body:has(.landing) {
   transition: background 120ms linear, color 120ms linear, border-color 120ms linear;
 }
 .btn:hover { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+/* Loading (§16): the label swaps, the field is kept so contrast never drops,
+   and the button stops taking input so it can't be fired twice. */
+.btn[aria-busy="true"] { pointer-events: none; }
 
 .btn--oncolour { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .btn--oncolour:hover { background: var(--paper); color: var(--ink); border-color: var(--ink); }

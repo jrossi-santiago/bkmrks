@@ -136,6 +136,37 @@ panel becomes the inverted ink CTA rectangle in `final`. The equal-panel row
 recurs as the outcome board, the step strip, the use-case columns and the
 constraint grid.
 
+## Browser furniture and button states
+
+`LANDING-FULL.md` §1 browser furniture:
+
+| Item | Where |
+|---|---|
+| Favicon | `src/app/icon.svg` — a flat mono bookmark mark, paper on ink. The deck allows the 🔖 glyph or a flat mark; the app's share text does not actually use the emoji, and the deck forbids a wordmark at 16px, so the mark it is. |
+| Apple touch icon | `src/app/apple-icon.png` (180×180, rendered from the same mark). Next's file convention takes PNG here, not SVG. |
+| Install name | `applicationName` / `appleWebApp.title` in `src/app/layout.tsx` |
+| Theme colour | `viewport.themeColor` in `src/app/page.tsx` (`#0b0b0b`) |
+
+§16 button states, all four that this page can reach:
+
+| State | Copy | How |
+|---|---|---|
+| Default | `Sign in with X` | — |
+| Hover | *(visual only)* | Inverts to paper field |
+| Loading | `Taking you to X…` | A click sets `aria-busy`, freezes the width and swaps the label. The string lives on the element as `data-loading`, never in the script. The field colour is kept so contrast never drops, and `pointer-events` is dropped so it can't fire twice. |
+| Returning, signed in | `Go to dashboard` | Session cookie present; CTA points at `/app` |
+| Generic failure | `That didn't go through. Try again.` | Rendered on the hero CTA when `login_error` is present — the button next to the banner is the one that carries the retry. The nav, final and sticky CTAs keep the standing ask. |
+
+The failed/denied OAuth banner (§16) uses the deck's copy verbatim and is
+triggered by the `login_error` param that `src/app/api/auth/callback/route.ts`
+and `src/app/login/route.ts` already redirect with. The raw error string is not
+printed — the designed copy replaces it.
+
+Two §16 states are deliberately **not** on this page: *Disconnected or expired X
+access* is an `/app` state (no param for it ever arrives at `/`, and inventing
+one would be fiction), and the §17 404 copy belongs to a `not-found` route that
+does not exist yet.
+
 ## Motion
 
 Almost none. The hero's horizontal frame runs creep at 150s per cycle

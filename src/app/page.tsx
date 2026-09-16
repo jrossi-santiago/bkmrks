@@ -48,13 +48,25 @@ const runs = (n: number) =>
     </i>
   ));
 
-/* Sticky mobile CTA appears once the hero has scrolled out (LANDING-FULL §15). */
-const STICKY_SCRIPT = `(function(){
+/* Progressive enhancement only — the page is complete without it.
+   1. Sticky mobile CTA appears once the hero scrolls out (LANDING-FULL §15).
+   2. The CTA takes its Loading label on the way to X (§16 button states).
+      The label travels on the element, so no copy lives in this script. */
+const LANDING_SCRIPT = `(function(){
   var hero=document.getElementById('hero'),bar=document.getElementById('sticky');
-  if(!hero||!bar||!('IntersectionObserver' in window))return;
-  new IntersectionObserver(function(e){
-    bar.setAttribute('data-shown',String(!e[0].isIntersecting));
-  },{rootMargin:'-72px 0px 0px 0px'}).observe(hero);
+  if(hero&&bar&&'IntersectionObserver' in window){
+    new IntersectionObserver(function(e){
+      bar.setAttribute('data-shown',String(!e[0].isIntersecting));
+    },{rootMargin:'-72px 0px 0px 0px'}).observe(hero);
+  }
+  document.addEventListener('click',function(ev){
+    if(ev.defaultPrevented||ev.button!==0||ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.altKey)return;
+    var t=ev.target,a=t&&t.closest?t.closest('a[data-loading]'):null;
+    if(!a||a.getAttribute('aria-busy')==='true')return;
+    a.setAttribute('aria-busy','true');
+    a.style.minWidth=a.offsetWidth+'px';
+    a.textContent=a.getAttribute('data-loading');
+  });
 })();`;
 
 export default async function Home({
@@ -67,9 +79,15 @@ export default async function Home({
   const session = raw ? await decryptSession(raw) : null;
   const { login_error: loginError } = await searchParams;
 
-  /* Button states, LANDING-FULL §16. "Go to dashboard" already ships in the app. */
-  const ctaHref = session ? "/app" : "/login";
-  const ctaLabel = session ? "Go to dashboard" : "Sign in with X";
+  /* Button states, LANDING-FULL §16. "Go to dashboard" already ships in the app.
+     The hero button sits next to the failure banner, so it is the one that
+     carries the retry label; the other three keep the standing ask. */
+  const signedIn = Boolean(session);
+  const ctaHref = signedIn ? "/app" : "/login";
+  const ctaLabel = signedIn ? "Go to dashboard" : "Sign in with X";
+  const loadingLabel = signedIn ? undefined : "Taking you to X…";
+  const heroCtaLabel =
+    !signedIn && loginError ? "That didn't go through. Try again." : ctaLabel;
 
   return (
     <div className={`landing ${newsreader.variable} ${plexMono.variable}`} id="top">
@@ -84,7 +102,7 @@ export default async function Home({
             <a href="#outcomes">What you get</a>
             <a href="#faq">FAQ</a>
           </nav>
-          <a className="btn btn--ghost" href={ctaHref}>
+          <a className="btn btn--ghost" href={ctaHref} data-loading={loadingLabel}>
             {ctaLabel}
           </a>
         </div>
@@ -132,8 +150,8 @@ export default async function Home({
                   </p>
 
                   <div className="hero__act">
-                    <a className="btn" href={ctaHref}>
-                      {ctaLabel}
+                    <a className="btn" href={ctaHref} data-loading={loadingLabel}>
+                      {heroCtaLabel}
                     </a>
                     <a className="anchor-link only-wide" href="#how">
                       See how it works ↓
@@ -844,7 +862,7 @@ export default async function Home({
               able to find.
             </p>
             <div className="final__act">
-              <a className="btn btn--oncolour" href={ctaHref}>
+              <a className="btn btn--oncolour" href={ctaHref} data-loading={loadingLabel}>
                 {ctaLabel}
               </a>
             </div>
@@ -910,12 +928,12 @@ export default async function Home({
         <span className="sticky__sub">
           Read-only · Paid, no free tier
         </span>
-        <a className="btn btn--oncolour" href={ctaHref}>
+        <a className="btn btn--oncolour" href={ctaHref} data-loading={loadingLabel}>
           {ctaLabel}
         </a>
       </div>
 
-      <script dangerouslySetInnerHTML={{ __html: STICKY_SCRIPT }} />
+      <script dangerouslySetInnerHTML={{ __html: LANDING_SCRIPT }} />
     </div>
   );
 }
