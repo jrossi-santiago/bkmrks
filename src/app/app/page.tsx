@@ -7,11 +7,13 @@ import { getDb } from "@/lib/db/client";
 import { bookmarks, bookmarkTags, tags } from "@/lib/db/schema";
 import { getMembershipActive } from "@/lib/db/users";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
+import { getUserHandlesWithCounts } from "@/lib/handles";
 import { embedTexts } from "@/lib/openai";
 import { AppHeader } from "@/components/AppHeader";
 import { BookmarkCard } from "@/components/BookmarkCard";
 import { SearchBar } from "@/components/SearchBar";
 import { TagFilterBar } from "@/components/TagFilterBar";
+import { HandleFilterBar } from "@/components/HandleFilterBar";
 import { TagManager } from "@/components/TagManager";
 
 // How many bookmarks the default (unsearched) list renders per page, and
@@ -41,6 +43,7 @@ export default async function AppPage({
     public?: string;
     checkout?: string;
     q?: string;
+    handle?: string;
     sort?: string;
     limit?: string;
   }>;
@@ -86,6 +89,11 @@ export default async function AppPage({
   // Phase 7: semantic search, composes with the tag filters above (AND) —
   // not a separate mode.
   const q = (params.q ?? "").trim();
+  // Filters the list down to one author's posts, composes with everything
+  // else (tags, untagged/public, search) the same way `q` does. Leading "@"
+  // stripped so both "elonmusk" and "@elonmusk" work when typed by hand
+  // instead of picked from HandleFilterBar's datalist.
+  const handle = (params.handle ?? "").trim().replace(/^@+/, "");
 
   // Sort only applies to the unsearched list — a search already ranks by
   // semantic similarity, which sorting by date would just override.
@@ -138,6 +146,12 @@ export default async function AppPage({
       )
     );
   }
+  if (handle) {
+    // Case-insensitive equality, not ILIKE substring — the datalist offers
+    // exact handles, and a substring match risks pulling in unrelated
+    // profiles whose handle happens to contain what was typed.
+    conditions.push(sql`lower(${bookmarks.authorHandle}) = lower(${handle})`);
+  }
 
   // Every column except `embedding` — a 1536-float vector BookmarkCard
   // never renders, not worth shipping in the page payload.
@@ -177,8 +191,9 @@ export default async function AppPage({
     if (hasMore) rows = rows.slice(0, limit);
   }
 
-  const [allTags, tagsByBookmark, [untaggedCountRow]] = await Promise.all([
+  const [allTags, allHandles, tagsByBookmark, [untaggedCountRow]] = await Promise.all([
     getUserTagsWithCounts(session.userId),
+    getUserHandlesWithCounts(session.userId),
     getTagsForBookmarks(rows.map((r) => r.id)),
     db
       .select({ count: sql<number>`count(*)::int` })
@@ -196,6 +211,13 @@ export default async function AppPage({
   // cluttering the bar with a filter that leads nowhere.
   const hasUntagged = (untaggedCountRow?.count ?? 0) > 0;
   const hasPublicBookmarks = allTags.some((t) => t.isPublic && t.count > 0);
+  // Shared across every link below so toggling one filter never silently
+  // drops another that's currently active.
+  const tagsParam = selectedTagIds.size > 0 ? [...selectedTagIds].join(",") : undefined;
+  const untaggedParam = untagged ? "1" : undefined;
+  const publicParam = publicOnly ? "1" : undefined;
+  const handleParam = handle || undefined;
+  const sortParam = sort === "created" ? "created" : undefined;
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 lg:max-w-7xl">
@@ -213,6 +235,16 @@ export default async function AppPage({
         selectedTagIds={selectedTagIds}
         untagged={untagged}
         publicOnly={publicOnly}
+        handle={handle}
+        sort={sort}
+      />
+      <HandleFilterBar
+        handle={handle}
+        allHandles={allHandles}
+        q={q}
+        selectedTagIds={selectedTagIds}
+        untagged={untagged}
+        publicOnly={publicOnly}
         sort={sort}
       />
       <TagFilterBar
@@ -223,6 +255,7 @@ export default async function AppPage({
         hasUntagged={hasUntagged}
         hasPublicBookmarks={hasPublicBookmarks}
         q={q}
+        handle={handle}
         sort={sort}
       />
       <TagManager allTags={allTags} handle={session.username} />
@@ -234,9 +267,10 @@ export default async function AppPage({
             <a
               key={option}
               href={buildAppHref({
-                tags: selectedTagIds.size > 0 ? [...selectedTagIds].join(",") : undefined,
-                untagged: untagged ? "1" : undefined,
-                public: publicOnly ? "1" : undefined,
+                tags: tagsParam,
+                untagged: untaggedParam,
+                public: publicParam,
+                handle: handleParam,
                 sort: option === "created" ? "created" : undefined,
               })}
               className={
@@ -255,7 +289,7 @@ export default async function AppPage({
         <p className="text-neutral-500">
           {q
             ? "No bookmarks match your search."
-            : untagged || publicOnly || selectedTagIds.size > 0
+            : untagged || publicOnly || selectedTagIds.size > 0 || handle
               ? "No bookmarks match this filter."
               : "No bookmarks synced yet — if you just signed in, the first sync runs in the background and may take a moment. Try Refresh."}
         </p>
@@ -285,10 +319,11 @@ export default async function AppPage({
           ) : (
             <a
               href={buildAppHref({
-                tags: selectedTagIds.size > 0 ? [...selectedTagIds].join(",") : undefined,
-                untagged: untagged ? "1" : undefined,
-                public: publicOnly ? "1" : undefined,
-                sort: sort === "created" ? "created" : undefined,
+                tags: tagsParam,
+                untagged: untaggedParam,
+                public: publicParam,
+                handle: handleParam,
+                sort: sortParam,
                 limit: String(Math.min(limit + PAGE_SIZE, MAX_LIMIT)),
               })}
               className="inline-block rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
