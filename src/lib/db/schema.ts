@@ -50,9 +50,10 @@ export const bookmarks = pgTable(
     importedAt: timestamp("imported_at", { withTimezone: true }).notNull().defaultNow(),
     // Position among this user's bookmarks, most-recently-bookmarked first
     // (X gives us order, not a bookmark timestamp — see PROJECT_BRIEF.md
-    // Phase 0 answers). Lower = more recent. New bookmarks get values below
-    // the current minimum so they always sort first, preserving the
-    // relative order X returned.
+    // Phase 0 answers). Higher = more recent, so ORDER BY source_order DESC
+    // surfaces the newest bookmark first. New bookmarks get values above
+    // the current maximum (src/lib/sync.ts's assignSourceOrder) so they
+    // always sort first, preserving the relative order X returned.
     sourceOrder: integer("source_order").notNull(),
     lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }), // Phase 4: soft delete when source tweet is gone
