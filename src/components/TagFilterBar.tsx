@@ -8,6 +8,7 @@ export function TagFilterBar({
   hasUntagged,
   hasPublicBookmarks,
   q,
+  handle,
   sort,
 }: {
   allTags: { id: string; name: string; count: number }[];
@@ -17,6 +18,7 @@ export function TagFilterBar({
   hasUntagged: boolean;
   hasPublicBookmarks: boolean;
   q: string;
+  handle: string;
   sort: string;
 }) {
   // A filter that would always show zero bookmarks just clutters the bar —
@@ -25,6 +27,7 @@ export function TagFilterBar({
   const visibleTags = allTags.filter((tag) => tag.count > 0 || selectedTagIds.has(tag.id));
   const showUntagged = hasUntagged || untagged;
   const showPublic = hasPublicBookmarks || publicOnly;
+  const handleValue = handle || undefined;
   const sortValue = sort === "created" ? "created" : undefined;
 
   if (visibleTags.length === 0 && !showUntagged && !showPublic) return null;
@@ -33,7 +36,12 @@ export function TagFilterBar({
     const next = new Set(selectedTagIds);
     if (next.has(tagId)) next.delete(tagId);
     else next.add(tagId);
-    return buildAppHref({ tags: next.size > 0 ? [...next].join(",") : undefined, q, sort: sortValue });
+    return buildAppHref({
+      tags: next.size > 0 ? [...next].join(",") : undefined,
+      q,
+      handle: handleValue,
+      sort: sortValue,
+    });
   }
 
   const chipClass = (active: boolean) =>
@@ -52,7 +60,11 @@ export function TagFilterBar({
       ))}
       {showUntagged && (
         <a
-          href={untagged ? buildAppHref({ q, sort: sortValue }) : buildAppHref({ untagged: "1", q, sort: sortValue })}
+          href={
+            untagged
+              ? buildAppHref({ q, handle: handleValue, sort: sortValue })
+              : buildAppHref({ untagged: "1", q, handle: handleValue, sort: sortValue })
+          }
           className={chipClass(untagged)}
         >
           Untagged
@@ -60,14 +72,18 @@ export function TagFilterBar({
       )}
       {showPublic && (
         <a
-          href={publicOnly ? buildAppHref({ q, sort: sortValue }) : buildAppHref({ public: "1", q, sort: sortValue })}
+          href={
+            publicOnly
+              ? buildAppHref({ q, handle: handleValue, sort: sortValue })
+              : buildAppHref({ public: "1", q, handle: handleValue, sort: sortValue })
+          }
           className={chipClass(publicOnly)}
         >
           Public
         </a>
       )}
       {(untagged || publicOnly || selectedTagIds.size > 0) && (
-        <a href={buildAppHref({ q, sort: sortValue })} className="text-xs text-neutral-400 hover:underline">
+        <a href={buildAppHref({ q, handle: handleValue, sort: sortValue })} className="text-xs text-neutral-400 hover:underline">
           Clear filters
         </a>
       )}
