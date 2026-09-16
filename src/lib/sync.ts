@@ -7,6 +7,20 @@ import { embedPendingBookmarks } from "./embed";
 
 export type SyncResult = { fetched: number; new: number; apiCalls: number };
 
+// Assigns sourceOrder to newly-synced tweets, already in X's newest-first
+// order, so every one lands above `maxOrder` (the highest sourceOrder
+// already stored for this user) instead of below the lowest — the bug this
+// replaces buried each incremental sync's newest bookmarks under
+// everything from earlier syncs. The newest tweet gets the highest value;
+// each older one counts down from there, landing just above maxOrder for
+// the oldest tweet in the batch.
+export function assignSourceOrder<T>(
+  newestFirst: readonly T[],
+  maxOrder: number
+): (T & { sourceOrder: number })[] {
+  return newestFirst.map((item, i) => ({ ...item, sourceOrder: maxOrder + newestFirst.length - i }));
+}
+
 // Pages through bookmarks newest-first (confirmed order — see
 // PROJECT_BRIEF.md Phase 0 answers) and stops at the first tweet_id already
 // in the database: the watermark strategy. On a brand new user this never
@@ -20,6 +34,10 @@ export async function runSync(userId: string): Promise<SyncResult> {
   let fetched = 0;
   let newCount = 0;
   let apiCalls = 0;
+  // Collected here instead of inserted per-tweet because sourceOrder can't
+  // be assigned until we know how many new tweets there are (see below) —
+  // the pagination loop can span several pages before hitting the watermark.
+  const newBookmarks: (typeof bookmarks.$inferInsert)[] = [];
 
   try {
     const [user] = await db
@@ -28,12 +46,6 @@ export async function runSync(userId: string): Promise<SyncResult> {
       .where(eq(users.id, userId))
       .limit(1);
     if (!user) throw new Error("User not found");
-
-    const [{ minOrder }] = await db
-      .select({ minOrder: sql<number>`coalesce(min(${bookmarks.sourceOrder}), 0)` })
-      .from(bookmarks)
-      .where(eq(bookmarks.userId, userId));
-    let nextOrder = minOrder - 1;
 
     let paginationToken: string | undefined;
     let stop = false;
@@ -78,29 +90,35 @@ export async function runSync(userId: string): Promise<SyncResult> {
           .map((key) => mediaByKey.get(key))
           .filter((m): m is NonNullable<typeof m> => Boolean(m));
 
-        await db
-          .insert(bookmarks)
-          .values({
-            id: crypto.randomUUID(),
-            userId,
-            tweetId: tweet.id,
-            authorXUserId: tweet.author_id,
-            authorHandle: author?.username ?? "unknown",
-            authorDisplayName: author?.name ?? "Unknown",
-            authorAvatarUrl: author?.profile_image_url ?? null,
-            text: tweet.text,
-            media: media.length ? media : null,
-            metrics: tweet.public_metrics ?? null,
-            tweetCreatedAt: new Date(tweet.created_at),
-            sourceOrder: nextOrder--,
-          })
-          .onConflictDoNothing();
-        newCount++;
+        newBookmarks.push({
+          id: crypto.randomUUID(),
+          userId,
+          tweetId: tweet.id,
+          authorXUserId: tweet.author_id,
+          authorHandle: author?.username ?? "unknown",
+          authorDisplayName: author?.name ?? "Unknown",
+          authorAvatarUrl: author?.profile_image_url ?? null,
+          text: tweet.text,
+          media: media.length ? media : null,
+          metrics: tweet.public_metrics ?? null,
+          tweetCreatedAt: new Date(tweet.created_at),
+          sourceOrder: 0, // placeholder — assigned below once the batch size is known
+        });
       }
 
       if (stop) break;
       paginationToken = page.meta?.next_token;
       if (!paginationToken) break;
+    }
+
+    newCount = newBookmarks.length;
+    if (newCount > 0) {
+      const [{ maxOrder }] = await db
+        .select({ maxOrder: sql<number>`coalesce(max(${bookmarks.sourceOrder}), 0)` })
+        .from(bookmarks)
+        .where(eq(bookmarks.userId, userId));
+
+      await db.insert(bookmarks).values(assignSourceOrder(newBookmarks, maxOrder)).onConflictDoNothing();
     }
 
     // Phase 7: embed whatever's pending for this user (newly-synced
