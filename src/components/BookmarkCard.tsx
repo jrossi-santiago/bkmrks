@@ -14,7 +14,14 @@ function MediaGrid({ media }: { media: XMedia[] }) {
         const src = m.type === "photo" ? m.url : m.preview_image_url;
         return src ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={m.media_key} src={src} alt="" className="rounded-md object-cover" />
+          <img
+              key={m.media_key}
+              src={src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="rounded-md object-cover"
+            />
         ) : null;
       })}
     </div>
@@ -46,7 +53,15 @@ export function BookmarkCard({
         <span className="text-xs text-neutral-400">#{position}</span>
         {!readingMode && bookmark.authorAvatarUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={bookmark.authorAvatarUrl} alt="" className="h-8 w-8 rounded-full" />
+          <img
+            src={bookmark.authorAvatarUrl}
+            alt=""
+            width={32}
+            height={32}
+            loading="lazy"
+            decoding="async"
+            className="h-8 w-8 rounded-full"
+          />
         )}
         <div className="text-sm">
           <a

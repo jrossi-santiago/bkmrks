@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq, and, isNull, isNotNull, inArray, notInArray, desc, sql, cosineDistance, getTableColumns } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, inArray, notExists, desc, sql, cosineDistance, getTableColumns } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { getDb } from "@/lib/db/client";
 import { bookmarks, bookmarkTags, tags } from "@/lib/db/schema";
@@ -12,6 +12,12 @@ import { BookmarkCard } from "@/components/BookmarkCard";
 import { SearchBar } from "@/components/SearchBar";
 import { TagFilterBar } from "@/components/TagFilterBar";
 import { TagManager } from "@/components/TagManager";
+
+// How many bookmarks the default (unsearched) list renders. Previously
+// unbounded: a heavy account shipped every row it had into the RSC payload
+// and mounted a card — and every image — for each one, which was the single
+// biggest contributor to a slow-feeling /app. Search already capped at 30.
+const PAGE_SIZE = 100;
 
 // Phase 2: reads from the database — bookmarks are synced on login and on
 // manual refresh (see /app/refresh), not fetched from X on every page load.
@@ -66,12 +72,19 @@ export default async function AppPage({
 
   // Reused below both to filter (?untagged=1) and to check whether the
   // "Untagged" chip should even be shown (no point offering a filter that's
-  // always empty).
-  const bookmarkIdsWithAnyTag = db.select({ id: bookmarkTags.bookmarkId }).from(bookmarkTags);
+  // always empty). NOT EXISTS rather than NOT IN (subquery): correlated, so
+  // Postgres anti-joins against bookmark_tags' primary key instead of first
+  // materialising the id of every tagged bookmark in the table.
+  const hasNoTags = notExists(
+    db
+      .select({ one: sql`1` })
+      .from(bookmarkTags)
+      .where(eq(bookmarkTags.bookmarkId, bookmarks.id))
+  );
 
   const conditions = [eq(bookmarks.userId, session.userId), isNull(bookmarks.deletedAt)];
   if (untagged) {
-    conditions.push(notInArray(bookmarks.id, bookmarkIdsWithAnyTag));
+    conditions.push(hasNoTags);
   } else if (publicOnly) {
     conditions.push(
       inArray(
@@ -123,7 +136,8 @@ export default async function AppPage({
       .select(bookmarkColumns)
       .from(bookmarks)
       .where(and(...conditions))
-      .orderBy(desc(bookmarks.sourceOrder));
+      .orderBy(desc(bookmarks.sourceOrder))
+      .limit(PAGE_SIZE);
   }
 
   const [allTags, tagsByBookmark, [untaggedCountRow]] = await Promise.all([
@@ -136,7 +150,7 @@ export default async function AppPage({
         and(
           eq(bookmarks.userId, session.userId),
           isNull(bookmarks.deletedAt),
-          notInArray(bookmarks.id, bookmarkIdsWithAnyTag)
+          hasNoTags
         )
       ),
   ]);
@@ -191,6 +205,13 @@ export default async function AppPage({
             </li>
           ))}
         </ol>
+      )}
+
+      {!q && rows.length === PAGE_SIZE && (
+        <p className="mt-6 text-sm text-neutral-500">
+          Showing your {PAGE_SIZE} most recent bookmarks. Use search or a tag filter to
+          reach older ones.
+        </p>
       )}
     </main>
   );
