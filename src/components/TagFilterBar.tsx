@@ -10,6 +10,7 @@ export function TagFilterBar({
   q,
   handle,
   sort,
+  dir,
 }: {
   allTags: { id: string; name: string; count: number }[];
   selectedTagIds: Set<string>;
@@ -20,6 +21,7 @@ export function TagFilterBar({
   q: string;
   handle: string;
   sort: string;
+  dir: string;
 }) {
   // A filter that would always show zero bookmarks just clutters the bar —
   // skip it, unless it's the one currently applied (so clearing it stays
@@ -29,6 +31,7 @@ export function TagFilterBar({
   const showPublic = hasPublicBookmarks || publicOnly;
   const handleValue = handle || undefined;
   const sortValue = sort === "created" ? "created" : undefined;
+  const dirValue = dir === "asc" ? "asc" : undefined;
 
   if (visibleTags.length === 0 && !showUntagged && !showPublic) return null;
 
@@ -41,6 +44,7 @@ export function TagFilterBar({
       q,
       handle: handleValue,
       sort: sortValue,
+      dir: dirValue,
     });
   }
 
@@ -62,8 +66,8 @@ export function TagFilterBar({
         <a
           href={
             untagged
-              ? buildAppHref({ q, handle: handleValue, sort: sortValue })
-              : buildAppHref({ untagged: "1", q, handle: handleValue, sort: sortValue })
+              ? buildAppHref({ q, handle: handleValue, sort: sortValue, dir: dirValue })
+              : buildAppHref({ untagged: "1", q, handle: handleValue, sort: sortValue, dir: dirValue })
           }
           className={chipClass(untagged)}
         >
@@ -74,8 +78,8 @@ export function TagFilterBar({
         <a
           href={
             publicOnly
-              ? buildAppHref({ q, handle: handleValue, sort: sortValue })
-              : buildAppHref({ public: "1", q, handle: handleValue, sort: sortValue })
+              ? buildAppHref({ q, handle: handleValue, sort: sortValue, dir: dirValue })
+              : buildAppHref({ public: "1", q, handle: handleValue, sort: sortValue, dir: dirValue })
           }
           className={chipClass(publicOnly)}
         >
@@ -83,7 +87,10 @@ export function TagFilterBar({
         </a>
       )}
       {(untagged || publicOnly || selectedTagIds.size > 0) && (
-        <a href={buildAppHref({ q, handle: handleValue, sort: sortValue })} className="text-xs text-neutral-400 hover:underline">
+        <a
+          href={buildAppHref({ q, handle: handleValue, sort: sortValue, dir: dirValue })}
+          className="text-xs text-neutral-400 hover:underline"
+        >
           Clear filters
         </a>
       )}

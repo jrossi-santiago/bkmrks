@@ -12,6 +12,7 @@ export function HandleFilterBar({
   untagged,
   publicOnly,
   sort,
+  dir,
 }: {
   handle: string;
   allHandles: { handle: string; count: number }[];
@@ -20,6 +21,7 @@ export function HandleFilterBar({
   untagged: boolean;
   publicOnly: boolean;
   sort: string;
+  dir: string;
 }) {
   if (allHandles.length === 0) return null;
 
@@ -28,6 +30,7 @@ export function HandleFilterBar({
   const untaggedValue = untagged ? "1" : undefined;
   const publicValue = publicOnly ? "1" : undefined;
   const sortValue = sort === "created" ? "created" : undefined;
+  const dirValue = dir === "asc" ? "asc" : undefined;
 
   return (
     <div className="mb-4 flex items-center gap-2">
@@ -37,6 +40,7 @@ export function HandleFilterBar({
         {untaggedValue && <input type="hidden" name="untagged" value={untaggedValue} />}
         {publicValue && <input type="hidden" name="public" value={publicValue} />}
         {sortValue && <input type="hidden" name="sort" value={sortValue} />}
+        {dirValue && <input type="hidden" name="dir" value={dirValue} />}
         <input
           type="text"
           name="handle"
@@ -59,7 +63,14 @@ export function HandleFilterBar({
       </form>
       {handle && (
         <a
-          href={buildAppHref({ q: qValue, tags: tagsValue, untagged: untaggedValue, public: publicValue, sort: sortValue })}
+          href={buildAppHref({
+            q: qValue,
+            tags: tagsValue,
+            untagged: untaggedValue,
+            public: publicValue,
+            sort: sortValue,
+            dir: dirValue,
+          })}
           className="text-xs whitespace-nowrap text-neutral-400 hover:underline"
         >
           Clear handle

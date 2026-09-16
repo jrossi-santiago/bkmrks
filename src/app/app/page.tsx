@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq, and, isNull, isNotNull, inArray, notExists, desc, sql, cosineDistance, getTableColumns } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, inArray, notExists, asc, desc, sql, cosineDistance, getTableColumns } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { buildAppHref } from "@/lib/appUrl";
 import { getDb } from "@/lib/db/client";
@@ -45,6 +45,7 @@ export default async function AppPage({
     q?: string;
     handle?: string;
     sort?: string;
+    dir?: string;
     limit?: string;
   }>;
 }) {
@@ -102,6 +103,8 @@ export default async function AppPage({
   // PROJECT_BRIEF.md Phase 0 answers — X exposes bookmark order, not a
   // bookmark timestamp).
   const sort = params.sort === "created" ? "created" : "saved";
+  // Which end of that sort to start from — newest (default) or oldest first.
+  const dir = params.dir === "asc" ? "asc" : "desc";
 
   const requestedLimit = Number(params.limit);
   const limit =
@@ -181,11 +184,14 @@ export default async function AppPage({
     // scale. Add a matching (user_id, tweet_created_at DESC) partial index,
     // like bookmarks_user_source_order_live_idx, if this gets slow.
     const orderColumn = sort === "created" ? bookmarks.tweetCreatedAt : bookmarks.sourceOrder;
+    // A btree index scans equally well in either direction, so flipping to
+    // ASC for "oldest first" doesn't lose the index bookmarks_user_source_
+    // order_live_idx was built for.
     rows = await db
       .select(bookmarkColumns)
       .from(bookmarks)
       .where(and(...conditions))
-      .orderBy(desc(orderColumn))
+      .orderBy(dir === "asc" ? asc(orderColumn) : desc(orderColumn))
       .limit(limit + 1);
     hasMore = rows.length > limit;
     if (hasMore) rows = rows.slice(0, limit);
@@ -218,6 +224,7 @@ export default async function AppPage({
   const publicParam = publicOnly ? "1" : undefined;
   const handleParam = handle || undefined;
   const sortParam = sort === "created" ? "created" : undefined;
+  const dirParam = dir === "asc" ? "asc" : undefined;
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 lg:max-w-7xl">
@@ -237,6 +244,7 @@ export default async function AppPage({
         publicOnly={publicOnly}
         handle={handle}
         sort={sort}
+        dir={dir}
       />
       <HandleFilterBar
         handle={handle}
@@ -246,6 +254,7 @@ export default async function AppPage({
         untagged={untagged}
         publicOnly={publicOnly}
         sort={sort}
+        dir={dir}
       />
       <TagFilterBar
         allTags={allTags}
@@ -257,31 +266,58 @@ export default async function AppPage({
         q={q}
         handle={handle}
         sort={sort}
+        dir={dir}
       />
       <TagManager allTags={allTags} handle={session.username} />
 
       {!q && (
-        <div className="mb-6 flex items-center gap-2 text-sm">
-          <span className="text-neutral-400">Sort:</span>
-          {(["saved", "created"] as const).map((option) => (
-            <a
-              key={option}
-              href={buildAppHref({
-                tags: tagsParam,
-                untagged: untaggedParam,
-                public: publicParam,
-                handle: handleParam,
-                sort: option === "created" ? "created" : undefined,
-              })}
-              className={
-                sort === option
-                  ? "font-medium text-neutral-900 underline dark:text-neutral-100"
-                  : "text-neutral-500 hover:underline"
-              }
-            >
-              {option === "saved" ? "Recently saved" : "Recently posted"}
-            </a>
-          ))}
+        <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-400">Sort:</span>
+            {(["saved", "created"] as const).map((option) => (
+              <a
+                key={option}
+                href={buildAppHref({
+                  tags: tagsParam,
+                  untagged: untaggedParam,
+                  public: publicParam,
+                  handle: handleParam,
+                  sort: option === "created" ? "created" : undefined,
+                  dir: dirParam,
+                })}
+                className={
+                  sort === option
+                    ? "font-medium text-neutral-900 underline dark:text-neutral-100"
+                    : "text-neutral-500 hover:underline"
+                }
+              >
+                {option === "saved" ? "Recently saved" : "Recently posted"}
+              </a>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-400">Order:</span>
+            {(["desc", "asc"] as const).map((option) => (
+              <a
+                key={option}
+                href={buildAppHref({
+                  tags: tagsParam,
+                  untagged: untaggedParam,
+                  public: publicParam,
+                  handle: handleParam,
+                  sort: sortParam,
+                  dir: option === "asc" ? "asc" : undefined,
+                })}
+                className={
+                  dir === option
+                    ? "font-medium text-neutral-900 underline dark:text-neutral-100"
+                    : "text-neutral-500 hover:underline"
+                }
+              >
+                {option === "desc" ? "Newest first" : "Oldest first"}
+              </a>
+            ))}
+          </div>
         </div>
       )}
 
@@ -313,8 +349,8 @@ export default async function AppPage({
         <div className="mt-6 text-center">
           {limit >= MAX_LIMIT ? (
             <p className="text-sm text-neutral-500">
-              Showing your {MAX_LIMIT} most recent bookmarks. Use search or a tag filter to
-              reach older ones.
+              Showing your {MAX_LIMIT} {dir === "asc" ? "oldest" : "most recent"} bookmarks. Use
+              search or a tag filter to reach {dir === "asc" ? "newer" : "older"} ones.
             </p>
           ) : (
             <a
@@ -324,6 +360,7 @@ export default async function AppPage({
                 public: publicParam,
                 handle: handleParam,
                 sort: sortParam,
+                dir: dirParam,
                 limit: String(Math.min(limit + PAGE_SIZE, MAX_LIMIT)),
               })}
               className="inline-block rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"

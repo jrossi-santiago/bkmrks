@@ -11,6 +11,7 @@ export function SearchBar({
   publicOnly,
   handle,
   sort,
+  dir,
 }: {
   q: string;
   selectedTagIds: Set<string>;
@@ -18,12 +19,14 @@ export function SearchBar({
   publicOnly: boolean;
   handle: string;
   sort: string;
+  dir: string;
 }) {
   const tagsValue = selectedTagIds.size > 0 ? [...selectedTagIds].join(",") : undefined;
   const untaggedValue = untagged ? "1" : undefined;
   const publicValue = publicOnly ? "1" : undefined;
   const handleValue = handle || undefined;
   const sortValue = sort === "created" ? "created" : undefined;
+  const dirValue = dir === "asc" ? "asc" : undefined;
 
   return (
     <div className="mb-4 flex items-center gap-2">
@@ -33,6 +36,7 @@ export function SearchBar({
         {publicValue && <input type="hidden" name="public" value={publicValue} />}
         {handleValue && <input type="hidden" name="handle" value={handleValue} />}
         {sortValue && <input type="hidden" name="sort" value={sortValue} />}
+        {dirValue && <input type="hidden" name="dir" value={dirValue} />}
         <input
           type="search"
           name="q"
@@ -43,7 +47,14 @@ export function SearchBar({
       </form>
       {q && (
         <a
-          href={buildAppHref({ tags: tagsValue, untagged: untaggedValue, public: publicValue, handle: handleValue, sort: sortValue })}
+          href={buildAppHref({
+            tags: tagsValue,
+            untagged: untaggedValue,
+            public: publicValue,
+            handle: handleValue,
+            sort: sortValue,
+            dir: dirValue,
+          })}
           className="text-xs whitespace-nowrap text-neutral-400 hover:underline"
         >
           Clear search
