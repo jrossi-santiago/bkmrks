@@ -1,6 +1,7 @@
 import type { bookmarks } from "@/lib/db/schema";
 import type { XMedia } from "@/lib/x";
 import { addTagAction, removeTagAction, addToPublicAction } from "@/app/app/actions";
+import { buildAppHref } from "@/lib/appUrl";
 
 // /app/page.tsx selects every column except `embedding` (a 1536-float
 // vector nothing here renders — no reason to ship it in the page payload).
@@ -72,7 +73,13 @@ export function BookmarkCard({
           >
             {bookmark.authorDisplayName}
           </a>{" "}
-          <span className="text-neutral-500">@{bookmark.authorHandle}</span>
+          <a
+            href={buildAppHref({ handle: bookmark.authorHandle })}
+            className="text-neutral-500 hover:underline"
+            title="See all your bookmarks from this profile"
+          >
+            @{bookmark.authorHandle}
+          </a>
         </div>
       </div>
 

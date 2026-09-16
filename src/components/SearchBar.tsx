@@ -9,17 +9,20 @@ export function SearchBar({
   selectedTagIds,
   untagged,
   publicOnly,
+  handle,
   sort,
 }: {
   q: string;
   selectedTagIds: Set<string>;
   untagged: boolean;
   publicOnly: boolean;
+  handle: string;
   sort: string;
 }) {
   const tagsValue = selectedTagIds.size > 0 ? [...selectedTagIds].join(",") : undefined;
   const untaggedValue = untagged ? "1" : undefined;
   const publicValue = publicOnly ? "1" : undefined;
+  const handleValue = handle || undefined;
   const sortValue = sort === "created" ? "created" : undefined;
 
   return (
@@ -28,6 +31,7 @@ export function SearchBar({
         {tagsValue && <input type="hidden" name="tags" value={tagsValue} />}
         {untaggedValue && <input type="hidden" name="untagged" value={untaggedValue} />}
         {publicValue && <input type="hidden" name="public" value={publicValue} />}
+        {handleValue && <input type="hidden" name="handle" value={handleValue} />}
         {sortValue && <input type="hidden" name="sort" value={sortValue} />}
         <input
           type="search"
@@ -39,7 +43,7 @@ export function SearchBar({
       </form>
       {q && (
         <a
-          href={buildAppHref({ tags: tagsValue, untagged: untaggedValue, public: publicValue, sort: sortValue })}
+          href={buildAppHref({ tags: tagsValue, untagged: untaggedValue, public: publicValue, handle: handleValue, sort: sortValue })}
           className="text-xs whitespace-nowrap text-neutral-400 hover:underline"
         >
           Clear search
