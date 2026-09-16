@@ -13,6 +13,35 @@ whenever you want; the callback route works the same on either domain
 since it derives the redirect URI from whichever host the request came in
 on.
 
+### If pushes to `main` stop deploying
+
+Symptom: you push to `main`, GitHub has the commit, but the live site keeps
+serving an older build. On the commit in GitHub the **Vercel** check is
+green, but its description reads **"Canceled by Ignored Build Step"** —
+Vercel received the push and created a deployment, then threw it away
+before building. Because it never becomes a production deployment, it does
+not show up under the Deployments list's **Production** filter, which makes
+it look like Vercel never heard about the push at all. It did.
+
+The culprit is Project → **Settings → Git → Ignored Build Step** (and/or
+Settings → Build and Deployment → Root Directory → **Skip deployment**).
+Note the exit-code convention is inverted from what you'd expect: the ignore
+command exiting **0 skips the build**, exiting **1 lets it proceed**.
+
+`vercel.json` pins `"ignoreCommand": "exit 1"`, which always builds and
+overrides whatever the dashboard has set, so this cannot silently recur.
+Trade-off: preview branches build too (that's Vercel's default behavior
+with no ignore step). If you ever want to skip unaffected builds again,
+change `ignoreCommand` here rather than in the dashboard, so the rule is
+version-controlled and visible in review.
+
+To check the real deploy status of a commit, ignoring dashboard filters:
+
+```
+gh api repos/jrossi-santiago/bkmrks/commits/<sha>/status \
+  --jq '.statuses[] | "\(.context) \(.state) — \(.description)"'
+```
+
 ## 2. Register the X API app
 
 At developer.x.com:
