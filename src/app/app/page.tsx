@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq, and, isNull, isNotNull, inArray, notExists, asc, desc, sql, cosineDistance, getTableColumns } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, inArray, notExists, asc, desc, sql, cosineDistance, getTableColumns, ilike } from "drizzle-orm";
 import { decryptSession, SESSION_COOKIE, READING_MODE_COOKIE } from "@/lib/session";
 import { buildAppHref } from "@/lib/appUrl";
 import { getDb } from "@/lib/db/client";
@@ -9,6 +9,7 @@ import { getMembershipActive } from "@/lib/db/users";
 import { getUserTagsWithCounts, getTagsForBookmarks } from "@/lib/tags";
 import { getUserHandlesWithCounts } from "@/lib/handles";
 import { embedTexts } from "@/lib/openai";
+import { parseExactPhrase, escapeIlikePattern } from "@/lib/search";
 import { AppHeader } from "@/components/AppHeader";
 import { BookmarkCard } from "@/components/BookmarkCard";
 import { SearchBar } from "@/components/SearchBar";
@@ -90,6 +91,12 @@ export default async function AppPage({
   // Phase 7: semantic search, composes with the tag filters above (AND) —
   // not a separate mode.
   const q = (params.q ?? "").trim();
+  // A quoted query ("like this") is an exact-phrase search —
+  // case-insensitive substring match on the tweet text, bypassing the
+  // embedding model entirely — for when semantic similarity guesses wrong
+  // and the user wants a literal term. See src/lib/search.ts.
+  const exactPhrase = parseExactPhrase(q);
+  const isExactPhrase = exactPhrase.length > 0;
   // Filters the list down to one author's posts, composes with everything
   // else (tags, untagged/public, search) the same way `q` does. Leading "@"
   // stripped so both "elonmusk" and "@elonmusk" work when typed by hand
@@ -155,6 +162,9 @@ export default async function AppPage({
     // profiles whose handle happens to contain what was typed.
     conditions.push(sql`lower(${bookmarks.authorHandle}) = lower(${handle})`);
   }
+  if (isExactPhrase) {
+    conditions.push(ilike(bookmarks.text, `%${escapeIlikePattern(exactPhrase)}%`));
+  }
 
   // Every column except `embedding` — a 1536-float vector BookmarkCard
   // never renders, not worth shipping in the page payload.
@@ -167,7 +177,7 @@ export default async function AppPage({
   // real matches under un-embedded rows.
   let rows;
   let hasMore = false;
-  if (q) {
+  if (q && !isExactPhrase) {
     const [queryEmbedding] = await embedTexts([q]);
     const similarity = sql<number>`1 - (${cosineDistance(bookmarks.embedding, queryEmbedding)})`;
     rows = await db
@@ -223,6 +233,11 @@ export default async function AppPage({
   const untaggedParam = untagged ? "1" : undefined;
   const publicParam = publicOnly ? "1" : undefined;
   const handleParam = handle || undefined;
+  // Only carried on the sort/dir/"show more" links below — an exact-phrase
+  // search shares that recency-ordered, paginated path (see the `rows`
+  // branch above), unlike a semantic search which always fully replaces
+  // ordering and has no "more" to page through.
+  const qParam = isExactPhrase ? q : undefined;
   const sortParam = sort === "created" ? "created" : undefined;
   const dirParam = dir === "asc" ? "asc" : undefined;
 
@@ -270,7 +285,7 @@ export default async function AppPage({
       />
       <TagManager allTags={allTags} handle={session.username} />
 
-      {!q && (
+      {(!q || isExactPhrase) && (
         <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
           <div className="flex items-center gap-2">
             <span className="text-neutral-400">Sort:</span>
@@ -278,6 +293,7 @@ export default async function AppPage({
               <a
                 key={option}
                 href={buildAppHref({
+                  q: qParam,
                   tags: tagsParam,
                   untagged: untaggedParam,
                   public: publicParam,
@@ -297,6 +313,7 @@ export default async function AppPage({
           </div>
           <a
             href={buildAppHref({
+              q: qParam,
               tags: tagsParam,
               untagged: untaggedParam,
               public: publicParam,
@@ -335,7 +352,7 @@ export default async function AppPage({
         </ol>
       )}
 
-      {!q && hasMore && (
+      {(!q || isExactPhrase) && hasMore && (
         <div className="mt-6 text-center">
           {limit >= MAX_LIMIT ? (
             <p className="text-sm text-neutral-500">
@@ -345,6 +362,7 @@ export default async function AppPage({
           ) : (
             <a
               href={buildAppHref({
+                q: qParam,
                 tags: tagsParam,
                 untagged: untaggedParam,
                 public: publicParam,

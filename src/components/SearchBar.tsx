@@ -41,7 +41,7 @@ export function SearchBar({
           type="search"
           name="q"
           defaultValue={q}
-          placeholder="Search your bookmarks…"
+          placeholder='Search your bookmarks… (use "quotes" for an exact phrase)'
           className="w-full rounded-md border border-neutral-300 bg-transparent px-3 py-1.5 text-sm dark:border-neutral-700"
         />
       </form>
