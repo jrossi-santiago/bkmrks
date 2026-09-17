@@ -55,12 +55,10 @@ export const bookmarks = pgTable(
     // the current maximum (src/lib/sync.ts's assignSourceOrder) so they
     // always sort first, preserving the relative order X returned.
     sourceOrder: integer("source_order").notNull(),
-    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
-    deletedAt: timestamp("deleted_at", { withTimezone: true }), // Phase 4: soft delete when source tweet is gone
+    deletedAt: timestamp("deleted_at", { withTimezone: true }), // soft delete; nothing currently sets this
     // Phase 7: semantic search. NULL = not yet embedded, which doubles as
     // the pending-work queue for src/lib/embed.ts — no separate status
-    // column. Cleared back to NULL by src/lib/revalidate.ts when a tweet's
-    // text changes, so a stale vector doesn't linger.
+    // column.
     embedding: vector("embedding", { dimensions: 1536 }),
   },
   (table) => [
@@ -126,22 +124,6 @@ export const syncRuns = pgTable("sync_runs", {
   status: text("status").notNull(), // "running" | "ok" | "error"
   fetchedCount: integer("fetched_count").notNull().default(0),
   newCount: integer("new_count").notNull().default(0),
-  apiCalls: integer("api_calls").notNull().default(0),
-  error: text("error"),
-});
-
-// Phase 4: logs the periodic compliance/hygiene job (src/lib/revalidate.ts)
-// separately from sync_runs — that table is per-user (one row per login/
-// refresh); this job runs once globally across all users per cron
-// invocation, so it doesn't fit sync_runs' shape.
-export const revalidationRuns = pgTable("revalidation_runs", {
-  id: text("id").primaryKey(),
-  startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
-  finishedAt: timestamp("finished_at", { withTimezone: true }),
-  status: text("status").notNull(), // "running" | "ok" | "error"
-  checkedCount: integer("checked_count").notNull().default(0),
-  deletedCount: integer("deleted_count").notNull().default(0), // newly soft-deleted this run
-  updatedCount: integer("updated_count").notNull().default(0), // text/media/metrics refreshed this run
   apiCalls: integer("api_calls").notNull().default(0),
   error: text("error"),
 });

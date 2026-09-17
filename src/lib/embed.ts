@@ -5,9 +5,8 @@ import { embedTexts } from "./openai";
 
 export type EmbedResult = { embedded: number };
 
-// Bounds each call's cost/duration the same way revalidate.ts's
-// MAX_BOOKMARKS_PER_RUN does — a single user's first-ever backfill (or a
-// global cron sweep) that exceeds this just gets the rest next run, since
+// Bounds each call's cost/duration — a single user's first-ever backfill (or
+// a global cron sweep) that exceeds this just gets the rest next run, since
 // "embedding IS NULL" is a durable queue, not a one-shot job.
 const DEFAULT_LIMIT = 500;
 
@@ -19,8 +18,8 @@ const DEFAULT_LIMIT = 500;
 //   every member's backlog, which is what actually backfills bookmarks that
 //   existed before this feature shipped.
 // The membership check applies either way (harmless when scoped, since
-// runSync's own callers already gate on it) — same reasoning as
-// revalidate.ts: no point spending calls on a lapsed account.
+// runSync's own callers already gate on it) — no point spending calls on a
+// lapsed account.
 export async function embedPendingBookmarks(opts: {
   userId?: string;
   limit?: number;
